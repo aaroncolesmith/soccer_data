@@ -250,7 +250,7 @@ df['league'] = df['url'].apply(extract_league_from_url)
 
 
 
-with open('data/matches.txt', 'r') as file:
+with open('data/error_matches.txt', 'r') as file:
     error_matches = file.readlines()
     error_matches = [line.strip() for line in error_matches]
 
