@@ -4,6 +4,7 @@ import re
 import functools as ft
 import numpy as np
 from bs4 import BeautifulSoup
+import time
 
 
 def extract_league_from_url(url):
