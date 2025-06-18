@@ -6,9 +6,9 @@ name: run soccer data
   #   - cron: "00 23 * * *"    #runs at 23:00 UTC everyday
 
 on:
-  # Cron job to run the workflow every 3 hours at 30 minutes past the hour
+  # Cron to run once a day at 6am PT
   schedule:
-    - cron: '30 */3 * * *'
+    - cron: '0 15 * * *' # This is UTC time, so 6am PT is 1pm UTC
   # Allows the workflow to be triggered manually
   workflow_dispatch:
 
