@@ -259,7 +259,7 @@ with open('data/error_matches.txt', 'r') as file:
 ## first we'll get the list of matches in the league_list
 league_list_one = ['Serie-A', 'Premier-League', 'La-Liga', 'Bundesliga']
 league_list_two = ['FA-Cup','Championship','Major-League-Soccer','Eredivisie','Ligue-1','Liga-MX','Liga-Portuguesa','Scottish-Premier-League','UEFA-Champions-League','UEFA-Europa-League']
-league_list_three = ['Champions-League','Copa-del-Rey','Conference-League','Europa-League','UEFA-Super-Cup','Coppa-Italia','DFB-Pokal','Saudi-Professional-League','Friendlies-M']
+league_list_three = ['Champions-League','Copa-del-Rey','Conference-League','Europa-League','UEFA-Super-Cup','Coppa-Italia','DFB-Pokal','Saudi-Professional-League','Friendlies-M','FIFA-Club-World-Cup','Gold-Cup']
 league_list_four = ['World-Cup',]
 
 league_list = league_list_one + league_list_two + league_list_three
