@@ -1985,3 +1985,4 @@ Unexpected number of tables: 5 in https://fbref.com/en/matches/b335507a/Barcelon
 Unexpected number of tables: 3 in https://fbref.com/en/matches/ebd43741/Chad-Kenya-June-7-2025-Friendlies-M
 Unexpected number of tables: 3 in https://fbref.com/en/matches/3a85ad7d/Congo-DR-Madagascar-June-8-2025-Friendlies-M
 Unexpected number of tables: 5 in https://fbref.com/en/matches/7b6e053c/LDU-de-Quito-Barcelona-June-18-2025-Serie-A
+Unexpected number of tables: 6 in https://fbref.com/en/matches/a3434f3e/Al-Hilal-Pachuca-June-26-2025-FIFA-Club-World-Cup
