@@ -1986,3 +1986,8 @@ Unexpected number of tables: 3 in https://fbref.com/en/matches/ebd43741/Chad-Ken
 Unexpected number of tables: 3 in https://fbref.com/en/matches/3a85ad7d/Congo-DR-Madagascar-June-8-2025-Friendlies-M
 Unexpected number of tables: 5 in https://fbref.com/en/matches/7b6e053c/LDU-de-Quito-Barcelona-June-18-2025-Serie-A
 Unexpected number of tables: 6 in https://fbref.com/en/matches/a3434f3e/Al-Hilal-Pachuca-June-26-2025-FIFA-Club-World-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/024a8671/Pickering-Penrith-August-1-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/4a789894/Roman-Glass-Nailsea-and-Tickenham-August-1-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/883b8fda/Stone-Old-Sutton-Cfield-August-1-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/30948f73/Wokingham-and-Emmbrook-FC-Brislington-August-1-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/6b131fc0/Belper-United-FC-Uttoxeter-Town-FC-August-1-2025-FA-Cup
