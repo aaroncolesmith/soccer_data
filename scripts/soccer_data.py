@@ -243,7 +243,7 @@ def get_match_box_score(r,match_url):
     d['match_url'] = match_url
     return d
 
-df = pd.read_parquet('https://github.com/aaroncolesmith/data_action_network/raw/refs/heads/main/data/fb_ref_data.parquet', engine='pyarrow')
+df = pd.read_parquet('https://github.com/aaroncolesmith/data_action_network_clean/raw/refs/heads/main/data/fb_ref_data.parquet', engine='pyarrow')
 d = pd.read_parquet('data/fb_ref_data_box_scores.parquet', engine='pyarrow')
 
 # Apply the function to the 'url' column to create the new 'league' column
