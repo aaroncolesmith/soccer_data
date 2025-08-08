@@ -2244,3 +2244,12 @@ Unexpected number of tables: 3 in https://fbref.com/en/matches/73b120c7/Ashford-
 Unexpected number of tables: 3 in https://fbref.com/en/matches/7435eaf6/Bridlington-Knaresborough-August-5-2025-FA-Cup
 Unexpected number of tables: 3 in https://fbref.com/en/matches/7e9ffab3/Concord-Rang-Harpenden-August-5-2025-FA-Cup
 Unexpected number of tables: 3 in https://fbref.com/en/matches/8340a8ed/Wombwell-Town-Horbury-Town-August-5-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/5db09f3f/Bedfont-Sports-Guernsey-FC-August-5-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/0a40ee49/Clevedon-Town-Kidlington-August-6-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/169461f1/AFC-Liverpool-Abbey-Hey-August-6-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/18bdb7a1/Sporting-BU-Erith-Town-August-6-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/7371c8bd/Whickham-Bishop-AL-August-6-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/a3048c94/West-Didsbury-Winsford-Utd-August-6-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/c9fb7bbd/Southall-Little-Common-August-6-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/cadedcf0/Holmesdale-FC-Tunbridge-Well-August-6-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/e83d5860/Wootton-Basset-Lydney-August-6-2025-FA-Cup
