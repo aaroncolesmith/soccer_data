@@ -2259,3 +2259,8 @@ Unexpected number of tables: 5 in https://fbref.com/en/matches/25b6197a/Audace-C
 Unexpected number of tables: 5 in https://fbref.com/en/matches/d8f64900/Pescara-Rimini-August-10-2025-Coppa-Italia
 Unexpected number of tables: 5 in https://fbref.com/en/matches/6ebf6a5a/El-Nacional-Barcelona-August-10-2025-Serie-A
 Unexpected number of tables: 3 in https://fbref.com/en/matches/7435eaf6/Bridlington-Knaresborough-August-12-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/0e6f1ecb/Pickering-Easington-Colliery-AFC-August-15-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/3f53a052/Christchurch-Tadley-Calleva-August-15-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/6f4427f2/Lye-Town-FC-RC-Warwick-August-15-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/957dc241/Epsom-and-Ewell-FC-South-Park-August-15-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/caeaa387/Atherton-Prestwich-Heys-AFC-August-15-2025-FA-Cup
