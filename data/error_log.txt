@@ -2389,3 +2389,7 @@ Unexpected number of tables: 3 in https://fbref.com/en/matches/48be38a7/Crowboro
 Unexpected number of tables: 3 in https://fbref.com/en/matches/488a77c6/Horndean-FC-Laverstock-and-Ford-FC-August-16-2025-FA-Cup
 Unexpected number of tables: 3 in https://fbref.com/en/matches/47d6ff02/Witham-Tring-Athletic-August-16-2025-FA-Cup
 Unexpected number of tables: 3 in https://fbref.com/en/matches/44c42934/Corinthian-Sevenoaks-August-16-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/06dc5632/Hallam-City-Liverpool-August-17-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/f648422e/Hackney-Wick-Bognor-Regis-August-17-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/0e924bab/Wokingham-and-Emmbrook-FC-Larkhall-August-17-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/46726edf/Littlehampton-Town-FC-Nth-Greenford-August-17-2025-FA-Cup
