@@ -277,10 +277,20 @@ print(f"Number of matches to scrape: {len(match_urls_to_scrape)}")
 total_time_estimate = len(match_urls_to_scrape) * np.random.uniform(6.2, 10.1)
 print(f"Estimated total time to scrape all matches: {total_time_estimate / 60:.2f} minutes")
 
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Referer': 'https://fbref.com/',
+    'DNT': '1'  # Do Not Track request header
+}
+
+
 for match_url in match_urls_to_scrape:
     #sleep for random time between 6.2 and 10.1 seconds
     time.sleep(np.random.uniform(6.2, 10.1))
-    r = requests.get(match_url)
+    r = requests.get(match_url,
+                     headers=headers)
     if r.status_code == 200:
         try:
             match_df = get_match_box_score(r, match_url)
