@@ -2418,3 +2418,4 @@ Unexpected number of tables: 3 in https://fbref.com/en/matches/8dee83a2/Ilford-W
 Unexpected number of tables: 3 in https://fbref.com/en/matches/b39ba66f/Southall-Erith-Town-August-20-2025-FA-Cup
 Unexpected number of tables: 3 in https://fbref.com/en/matches/fe5e89cd/Grays-Hitchin-August-20-2025-FA-Cup
 Unexpected number of tables: 3 in https://fbref.com/en/matches/66cfc867/Egham-Town-Corinthian-August-26-2025-FA-Cup
+Unexpected number of tables: 6 in https://fbref.com/en/matches/9ffd52d9/Ferencvaros-Racing-Union-August-27-2025-Champions-League
