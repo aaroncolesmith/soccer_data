@@ -7,8 +7,8 @@ name: run soccer data
 
 on:
   # Cron to run once a day at 6am PT
-  # schedule:
-  #   - cron: '0 15 * * *' # This is UTC time, so 6am PT is 1pm UTC
+  schedule:
+    - cron: '0 15 * * *' # This is UTC time, so 6am PT is 1pm UTC
   # Allows the workflow to be triggered manually
   workflow_dispatch:
 
