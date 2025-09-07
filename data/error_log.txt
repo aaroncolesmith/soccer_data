@@ -2533,3 +2533,5 @@ Unexpected number of tables: 3 in https://fbref.com/en/matches/32acd4d5/Whitehaw
 Unexpected number of tables: 3 in https://fbref.com/en/matches/7435c778/Exmouth-Shaftesbury-September-3-2025-FA-Cup
 Unexpected number of tables: 3 in https://fbref.com/en/matches/c01ef658/Ashton-Utd-Hallam-September-3-2025-FA-Cup
 Unexpected number of tables: 3 in https://fbref.com/en/matches/0f5f2bd6/Malaysia-Singapore-September-4-2025-Friendlies-M
+Unexpected number of tables: 3 in https://fbref.com/en/matches/a71e7881/Sri-Lanka-Maldives-September-6-2025-Friendlies-M
+Unexpected number of tables: 3 in https://fbref.com/en/matches/92c882d4/Nepal-Bangladesh-September-6-2025-Friendlies-M
