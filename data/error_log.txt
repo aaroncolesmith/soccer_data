@@ -2541,3 +2541,4 @@ Unexpected number of tables: 3 in https://fbref.com/en/matches/f3df8809/Singapor
 Unexpected number of tables: 3 in https://fbref.com/en/matches/378b61aa/Jordan-Dominican-Republic-September-9-2025-Friendlies-M
 Unexpected number of tables: 3 in https://fbref.com/en/matches/76d64cf6/Folkestone-Maidstone-United-September-12-2025-FA-Cup
 Unexpected number of tables: 3 in https://fbref.com/en/matches/d9fbdde5/Frome-Town-Shaftesbury-September-17-2025-FA-Cup
+Unexpected number of tables: 5 in https://fbref.com/en/matches/b53540cc/Blackburn-Rovers-Ipswich-Town-September-20-2025-Championship
