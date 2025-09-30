@@ -2592,3 +2592,4 @@ Unexpected number of tables: 3 in https://fbref.com/en/matches/e72303ae/Sporting
 Unexpected number of tables: 3 in https://fbref.com/en/matches/a2698b74/Campanario-Yuncos-September-27-2025-Copa-del-Rey
 Unexpected number of tables: 3 in https://fbref.com/en/matches/aa344df2/Atletico-Melilla-Atletico-Palma-del-Rio-September-27-2025-Copa-del-Rey
 Unexpected number of tables: 3 in https://fbref.com/en/matches/b0e2ce79/Sant-Jordi-CD-Lourdes-September-27-2025-Copa-del-Rey
+Unexpected number of tables: 3 in https://fbref.com/en/matches/a1a16310/Aveley-Halesowen-September-29-2025-FA-Cup
