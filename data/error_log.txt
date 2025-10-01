@@ -2593,3 +2593,10 @@ Unexpected number of tables: 3 in https://fbref.com/en/matches/a2698b74/Campanar
 Unexpected number of tables: 3 in https://fbref.com/en/matches/aa344df2/Atletico-Melilla-Atletico-Palma-del-Rio-September-27-2025-Copa-del-Rey
 Unexpected number of tables: 3 in https://fbref.com/en/matches/b0e2ce79/Sant-Jordi-CD-Lourdes-September-27-2025-Copa-del-Rey
 Unexpected number of tables: 3 in https://fbref.com/en/matches/a1a16310/Aveley-Halesowen-September-29-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/38968ccc/Darlington-Fylde-September-30-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/5c493d86/Dorking-Wand-Salisbury-FC-September-30-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/686686da/Billericay-Hednesford-September-30-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/911a95d9/Tonbridge-Cray-Valley-September-30-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/b2e92af2/Ashton-Utd-Runcorn-September-30-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/b44445f8/Hereford-Hemel-Hempst-September-30-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/cb670ad9/Bracknell-Flackwell-H-September-30-2025-FA-Cup
