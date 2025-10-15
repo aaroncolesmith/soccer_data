@@ -2613,3 +2613,10 @@ Unexpected number of tables: 3 in https://fbref.com/en/matches/ea4b0f1b/UD-Marac
 Unexpected number of tables: 3 in https://fbref.com/en/matches/7c98fd57/Grenada-British-Virgin-Islands-October-8-2025-Friendlies-M
 Unexpected number of tables: 3 in https://fbref.com/en/matches/98f9cb4f/St-Vincent-and-the-Grenadines-Cuba-October-8-2025-Friendlies-M
 Unexpected number of tables: 3 in https://fbref.com/en/matches/459f48d9/Worthing-Forest-Green-Rovers-October-13-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/1d364236/Harborough-Altrincham-October-14-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/34a2585a/Truro-City-Totton-October-14-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/61c1e947/Sutton-United-Farnham-Town-October-14-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/62e865fe/Brackley-Town-Woking-October-14-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/72c21cc7/Hartlepool-United-Gainsborough-October-14-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/bfc6a9a7/Chester-Morecambe-October-14-2025-FA-Cup
+Unexpected number of tables: 3 in https://fbref.com/en/matches/f0f321ae/St-Albans-City-Banbury-October-14-2025-FA-Cup
