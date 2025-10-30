@@ -2625,3 +2625,14 @@ Unexpected number of tables: 6 in https://fbref.com/en/matches/e661d11e/UD-San-F
 Unexpected number of tables: 4 in https://fbref.com/en/matches/b5faea96/CD-Tropezon-Cultural-Leonesa-October-28-2025-Copa-del-Rey
 Unexpected number of tables: 6 in https://fbref.com/en/matches/acac8d32/CD-Roda-Granada-October-28-2025-Copa-del-Rey
 Unexpected number of tables: 6 in https://fbref.com/en/matches/26a07ae9/UD-Maracena-Valencia-October-28-2025-Copa-del-Rey
+Unexpected number of tables: 6 in https://fbref.com/en/matches/1d64f143/Atletic-Sant-Just-Mallorca-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 6 in https://fbref.com/en/matches/b7f4c919/CD-Cieza-Cordoba-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 4 in https://fbref.com/en/matches/a665a506/Naxara-Eibar-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 4 in https://fbref.com/en/matches/76b35662/Club-Portugalete-Valladolid-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 4 in https://fbref.com/en/matches/59d2dfd6/Azuaga-Leganes-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 4 in https://fbref.com/en/matches/532c68af/Torrent-CF-Juventud-Torremolinos-CF-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 6 in https://fbref.com/en/matches/5123f329/Navalcarnero-Merida-AD-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 4 in https://fbref.com/en/matches/d79e2f62/Reus-FC-Reddis-Europa-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 6 in https://fbref.com/en/matches/a8449521/Real-Jaen-Eldense-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 4 in https://fbref.com/en/matches/3011c090/Quintanar-del-Rey-Ibiza-October-29-2025-Copa-del-Rey
+Unexpected number of tables: 6 in https://fbref.com/en/matches/25b8b8de/Yuncos-Rayo-Vallecano-October-29-2025-Copa-del-Rey
