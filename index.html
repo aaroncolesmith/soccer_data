@@ -125,7 +125,19 @@
 
   .team-filter {
     display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 4px;
   }
+  .team-search {
+    font-family: var(--font);
+    font-size: 12.5px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+    color: var(--ink);
+    width: 160px;
+  }
+  .team-search::placeholder { color: var(--ink-muted); }
   .chip {
     display: inline-flex; align-items: center; gap: 6px;
     border: 1px solid var(--border);
@@ -157,8 +169,8 @@
     border-radius: 14px;
     box-shadow: var(--shadow);
   }
-  .viz-panel { padding: 8px; position: relative; min-height: 560px; }
-  #viz-svg { width: 100%; height: 560px; display: block; }
+  .viz-panel { padding: 8px; position: relative; min-height: 720px; }
+  #viz-svg { width: 100%; height: 720px; display: block; }
   .viz-hint {
     position: absolute; left: 22px; bottom: 16px;
     font-size: 12px; color: var(--ink-muted);
@@ -285,10 +297,10 @@
       <button class="theme-toggle" id="themeToggle" type="button">🌓 Theme</button>
       <h1>Premier League Rivalries</h1>
       <p class="sub">
-        Eight clubs have stayed in the Premier League every one of the last 10 seasons
-        (2016&#8211;17 through 2025&#8211;26) without being relegated: Arsenal, Chelsea, Crystal Palace,
-        Everton, Liverpool, Manchester City, Manchester United and Tottenham Hotspur.
-        For each, here are their fans' five most hated rivals, rated 1 (mild needle) to 5 (blood feud).
+        Every club that has played at least one Premier League season in the last 10 years
+        (2016&#8211;17 through 2025&#8211;26) &mdash; 34 in all, from ever-present giants to
+        one-season visitors. For each, here are their fans' five most hated rivals,
+        rated 1 (mild needle) to 5 (blood feud).
       </p>
     </div>
   </header>
@@ -299,9 +311,10 @@
       <button data-view="matrix">Matrix</button>
       <button data-view="table">Table</button>
     </div>
-    <div class="team-filter" id="teamFilter"></div>
+    <input type="text" id="teamSearch" placeholder="Filter clubs…" class="team-search" />
     <div class="spacer"></div>
   </div>
+  <div class="team-filter" id="teamFilter"></div>
 
   <div class="stage">
     <div class="panel viz-panel">
@@ -318,8 +331,8 @@
   </div>
 
   <div class="legend-row">
-    <span><span class="legend-groupdot" style="background:var(--accent)"></span>Ever-present club (10/10 seasons)</span>
-    <span><span class="legend-groupdot" style="background:#9a9ba3"></span>Rival club (not ever-present)</span>
+    <span><span class="legend-groupdot" style="background:var(--accent)"></span>Played in the PL in the last 10 seasons (34 clubs)</span>
+    <span><span class="legend-groupdot" style="background:#9a9ba3"></span>Cited rival, not in the PL recently</span>
     <span class="legend-scale">Intensity:
       <span class="sw" style="background:var(--int-1)"></span>1
       <span class="sw" style="background:var(--int-2)"></span>2
@@ -330,12 +343,16 @@
   </div>
 
   <footer class="foot">
-    Ever-present list derived from Premier League season-by-season promotion/relegation results, 2016&#8211;17
-    through 2025&#8211;26. Rivalry selections and intensity ratings are a synthesis of long-running fan-rivalry
-    surveys (including the widely cited "League of Love and Hate" fan census) and documented club history
-    &mdash; treat the 1&#8211;5 scores as an editorial estimate of intensity, not an exact measurement.
-    Rival clubs shown outside the ever-present eight (e.g. West Ham, Leeds, Brighton, Millwall, Charlton, Watford, Newcastle)
-    are included as rivalry targets only; their own outgoing rivalries aren't charted here.
+    The 34-club list is every team that played at least one Premier League match in the last 10 seasons
+    (2016&#8211;17 through 2025&#8211;26), derived from season-by-season promotion/relegation results &mdash;
+    from ever-present sides (Arsenal, Chelsea, Crystal Palace, Everton, Liverpool, Manchester City,
+    Manchester United, Tottenham Hotspur, West Ham) down to single-season visitors (Cardiff, Hull, Ipswich,
+    Luton, Middlesbrough). Rivalry selections and intensity ratings are a synthesis of long-running
+    fan-rivalry surveys (including the widely cited "League of Love and Hate" fan census) and documented
+    club/derby history &mdash; treat the 1&#8211;5 scores as an editorial estimate of intensity, not an exact
+    measurement. Some cited rivals (e.g. Millwall, Leeds' and Sheffield United's Yorkshire neighbours,
+    Birmingham City, Portsmouth) haven't played Premier League football in the last 10 seasons; they're
+    included as rivalry targets only, so their own outgoing rivalries aren't charted here.
   </footer>
 </div>
 
@@ -345,22 +362,68 @@
 /* ---------------------------------------------------------------------
    DATA
 --------------------------------------------------------------------- */
+// "seasons" = how many of the last 10 Premier League seasons (2016-17 to 2025-26) this club played in.
 const CLUBS = {
-  ARS: { name: "Arsenal",            short: "ARS", color: "#EF0107", group: "main" },
-  CHE: { name: "Chelsea",             short: "CHE", color: "#034694", group: "main" },
-  CRY: { name: "Crystal Palace",      short: "CRY", color: "#1B458F", group: "main" },
-  EVE: { name: "Everton",             short: "EVE", color: "#003399", group: "main" },
-  LIV: { name: "Liverpool",           short: "LIV", color: "#C8102E", group: "main" },
-  MCI: { name: "Manchester City",     short: "MCI", color: "#6CABDD", group: "main" },
-  MUN: { name: "Manchester United",   short: "MUN", color: "#DA291C", group: "main" },
-  TOT: { name: "Tottenham Hotspur",   short: "TOT", color: "#132257", group: "main" },
-  WHU: { name: "West Ham United",     short: "WHU", color: "#7A263A", group: "other" },
-  LEE: { name: "Leeds United",        short: "LEE", color: "#FFCD00", group: "other" },
-  BHA: { name: "Brighton & Hove Albion", short: "BHA", color: "#0057B8", group: "other" },
-  MIL: { name: "Millwall",            short: "MIL", color: "#00234B", group: "other" },
+  ARS: { name: "Arsenal",                 short: "ARS", color: "#EF0107", group: "main", seasons: 10 },
+  AVL: { name: "Aston Villa",              short: "AVL", color: "#670E36", group: "main", seasons: 7 },
+  BOU: { name: "Bournemouth",              short: "BOU", color: "#DA291C", group: "main", seasons: 8 },
+  BRE: { name: "Brentford",                short: "BRE", color: "#E30613", group: "main", seasons: 5 },
+  BHA: { name: "Brighton & Hove Albion",   short: "BHA", color: "#0057B8", group: "main", seasons: 9 },
+  BUR: { name: "Burnley",                  short: "BUR", color: "#6C1D45", group: "main", seasons: 8 },
+  CAR: { name: "Cardiff City",             short: "CAR", color: "#0070B5", group: "main", seasons: 1 },
+  CHE: { name: "Chelsea",                  short: "CHE", color: "#034694", group: "main", seasons: 10 },
+  CRY: { name: "Crystal Palace",           short: "CRY", color: "#1B458F", group: "main", seasons: 10 },
+  EVE: { name: "Everton",                  short: "EVE", color: "#003399", group: "main", seasons: 10 },
+  FUL: { name: "Fulham",                   short: "FUL", color: "#000000", group: "main", seasons: 6 },
+  HUD: { name: "Huddersfield Town",        short: "HUD", color: "#0E63AD", group: "main", seasons: 2 },
+  HUL: { name: "Hull City",                short: "HUL", color: "#F18A00", group: "main", seasons: 1 },
+  IPS: { name: "Ipswich Town",             short: "IPS", color: "#0044A9", group: "main", seasons: 1 },
+  LEE: { name: "Leeds United",             short: "LEE", color: "#1D428A", group: "main", seasons: 4 },
+  LEI: { name: "Leicester City",           short: "LEI", color: "#003090", group: "main", seasons: 8 },
+  LIV: { name: "Liverpool",                short: "LIV", color: "#C8102E", group: "main", seasons: 10 },
+  LUT: { name: "Luton Town",               short: "LUT", color: "#F78F1E", group: "main", seasons: 1 },
+  MCI: { name: "Manchester City",          short: "MCI", color: "#6CABDD", group: "main", seasons: 10 },
+  MUN: { name: "Manchester United",        short: "MUN", color: "#DA291C", group: "main", seasons: 10 },
+  MID: { name: "Middlesbrough",            short: "MID", color: "#CC0000", group: "main", seasons: 1 },
+  NEW: { name: "Newcastle United",         short: "NEW", color: "#241F20", group: "main", seasons: 9 },
+  NOR: { name: "Norwich City",             short: "NOR", color: "#00A650", group: "main", seasons: 2 },
+  NFO: { name: "Nottingham Forest",        short: "NFO", color: "#DD0000", group: "main", seasons: 4 },
+  SHU: { name: "Sheffield United",         short: "SHU", color: "#EE2737", group: "main", seasons: 3 },
+  SOU: { name: "Southampton",              short: "SOU", color: "#D71920", group: "main", seasons: 8 },
+  STK: { name: "Stoke City",                short: "STK", color: "#E03A3E", group: "main", seasons: 2 },
+  SUN: { name: "Sunderland",               short: "SUN", color: "#EB172B", group: "main", seasons: 2 },
+  SWA: { name: "Swansea City",             short: "SWA", color: "#333333", group: "main", seasons: 2 },
+  TOT: { name: "Tottenham Hotspur",        short: "TOT", color: "#132257", group: "main", seasons: 10 },
+  WAT: { name: "Watford",                  short: "WAT", color: "#FBEE23", group: "main", seasons: 5 },
+  WBA: { name: "West Bromwich Albion",     short: "WBA", color: "#122F67", group: "main", seasons: 3 },
+  WHU: { name: "West Ham United",          short: "WHU", color: "#7A263A", group: "main", seasons: 10 },
+  WOL: { name: "Wolverhampton Wanderers",  short: "WOL", color: "#FDB913", group: "main", seasons: 8 },
+
+  // rival clubs cited above that haven't played in the Premier League in the last 10 seasons
+  MIL: { name: "Millwall",            short: "MIL", color: "#1B3159", group: "other" },
   CHA: { name: "Charlton Athletic",   short: "CHA", color: "#D2122E", group: "other" },
-  WAT: { name: "Watford",             short: "WAT", color: "#FBEE23", group: "other" },
-  NEW: { name: "Newcastle United",    short: "NEW", color: "#241F20", group: "other" },
+  BIR: { name: "Birmingham City",     short: "BIR", color: "#1E3A8A", group: "other" },
+  COV: { name: "Coventry City",       short: "COV", color: "#78D0F7", group: "other" },
+  POR: { name: "Portsmouth",          short: "POR", color: "#001489", group: "other" },
+  BLB: { name: "Blackburn Rovers",    short: "BLB", color: "#0F5EA8", group: "other" },
+  PNE: { name: "Preston North End",   short: "PNE", color: "#002D5C", group: "other" },
+  BOL: { name: "Bolton Wanderers",    short: "BOL", color: "#6C1D45", group: "other" },
+  BLP: { name: "Blackpool",           short: "BLP", color: "#FF7900", group: "other" },
+  BRC: { name: "Bristol City",        short: "BRC", color: "#E21A23", group: "other" },
+  BRA: { name: "Bradford City",       short: "BRA", color: "#8A1538", group: "other" },
+  BAR: { name: "Barnsley",            short: "BAR", color: "#D2122E", group: "other" },
+  SHW: { name: "Sheffield Wednesday", short: "SHW", color: "#4681CF", group: "other" },
+  ROT: { name: "Rotherham United",    short: "ROT", color: "#DA291C", group: "other" },
+  DER: { name: "Derby County",        short: "DER", color: "#17325C", group: "other" },
+  COL: { name: "Colchester United",   short: "COL", color: "#1B3F8B", group: "other" },
+  GRI: { name: "Grimsby Town",        short: "GRI", color: "#111111", group: "other" },
+  HAR: { name: "Hartlepool United",   short: "HAR", color: "#001C58", group: "other" },
+  NCO: { name: "Notts County",        short: "NCO", color: "#1A1A1A", group: "other" },
+  PET: { name: "Peterborough United", short: "PET", color: "#1C3F94", group: "other" },
+  RDG: { name: "Reading",             short: "RDG", color: "#004494", group: "other" },
+  QPR: { name: "Queens Park Rangers", short: "QPR", color: "#1D5BA4", group: "other" },
+  CRE: { name: "Crewe Alexandra",     short: "CRE", color: "#E2231A", group: "other" },
+  PVA: { name: "Port Vale",           short: "PVA", color: "#B8860B", group: "other" },
 };
 
 // directed: source club's fans -> rival, intensity 1-5, short rationale
@@ -370,6 +433,42 @@ const RIVALRIES = [
   { s: "ARS", t: "MUN", i: 3, note: "Defined the Premier League's title races of the late 1990s/2000s, including 2004's 'Battle of the Buffet'." },
   { s: "ARS", t: "WHU", i: 2, note: "Old East vs North London needle, with a history of hostility between fan groups." },
   { s: "ARS", t: "LIV", i: 2, note: "Two of England's most decorated clubs, with recent title-race collisions raising the temperature." },
+
+  { s: "AVL", t: "BIR", i: 5, note: "The Second City Derby — one of English football's fiercest local rivalries." },
+  { s: "AVL", t: "WOL", i: 3, note: "West Midlands rivals with a long history of combative top-flight meetings." },
+  { s: "AVL", t: "WBA", i: 3, note: "Black Country vs Birmingham needle sharpened by recent Premier League and Championship meetings." },
+  { s: "AVL", t: "LEI", i: 2, note: "East vs West Midlands rivalry, sharpened by recent European-qualification races." },
+  { s: "AVL", t: "COV", i: 2, note: "West Midlands neighbours with a long shared-ground history (Villa Park hosted Coventry in the 1940s)." },
+
+  { s: "BOU", t: "SOU", i: 3, note: "South Coast rivalry sharpened by proximity and repeated Premier League meetings." },
+  { s: "BOU", t: "POR", i: 3, note: "Historic South Coast animosity between Dorset and Hampshire fans." },
+  { s: "BOU", t: "BHA", i: 2, note: "South Coast rivalry, intensified as both clubs established themselves in the Premier League." },
+  { s: "BOU", t: "SWA", i: 1, note: "A modern rivalry born from combative 2010s Premier League and Championship meetings." },
+  { s: "BOU", t: "RDG", i: 1, note: "Championship-era rivalry from repeated promotion-chasing meetings." },
+
+  { s: "BRE", t: "QPR", i: 4, note: "West London's most traditional local derby, dating back over a century." },
+  { s: "BRE", t: "FUL", i: 3, note: "West London neighbours separated by a few miles of the Thames." },
+  { s: "BRE", t: "CHE", i: 2, note: "West London rivalry sharpened since Brentford's Premier League promotion." },
+  { s: "BRE", t: "WHU", i: 1, note: "General London rivalry with no deep shared history." },
+  { s: "BRE", t: "WAT", i: 1, note: "Home Counties commuter-belt neighbours." },
+
+  { s: "BHA", t: "CRY", i: 5, note: "The M23 Derby — a modern rivalry born from a 1976 power struggle between the clubs' rival managers." },
+  { s: "BHA", t: "POR", i: 4, note: "One of English football's most bitter historic rivalries, predating the M23 Derby by decades." },
+  { s: "BHA", t: "SOU", i: 2, note: "South Coast rivalry between Sussex and Hampshire." },
+  { s: "BHA", t: "MIL", i: 2, note: "Rooted in hooligan-era clashes through the 1970s and 80s." },
+  { s: "BHA", t: "CHE", i: 1, note: "Modern friction over poached managers and players (Graham Potter's 2022 move chief among them)." },
+
+  { s: "BUR", t: "BLB", i: 5, note: "The East Lancashire Derby — a fierce, century-old local rivalry." },
+  { s: "BUR", t: "PNE", i: 3, note: "Lancashire rivals with a long history of combative meetings." },
+  { s: "BUR", t: "BOL", i: 2, note: "Lancashire mill-town rivalry dating to the Football League's earliest days." },
+  { s: "BUR", t: "BLP", i: 2, note: "Lancashire coastal-vs-inland rivalry." },
+  { s: "BUR", t: "LEE", i: 1, note: "Northern rivalry sharpened by recent Championship and Premier League meetings." },
+
+  { s: "CAR", t: "SWA", i: 5, note: "The South Wales Derby — the fiercest rivalry in Welsh football." },
+  { s: "CAR", t: "BRC", i: 3, note: "Cross-Severn rivalry between South Wales and Bristol." },
+  { s: "CAR", t: "MIL", i: 2, note: "Rooted in hooligan-era violence dating to the 1980s." },
+  { s: "CAR", t: "LEE", i: 1, note: "Marked by a notorious violent 1970s FA Cup meeting." },
+  { s: "CAR", t: "RDG", i: 1, note: "M4-corridor rivalry from repeated Championship promotion battles." },
 
   { s: "CHE", t: "TOT", i: 4, note: "West vs North London derby, intensified since Chelsea's Abramovich-era rise to the top." },
   { s: "CHE", t: "ARS", i: 4, note: "Mirror of Arsenal's rivalry — two West/North London giants trading top-four and trophy blows." },
@@ -389,11 +488,53 @@ const RIVALRIES = [
   { s: "EVE", t: "MCI", i: 2, note: "Grown from repeated clashes over European qualification places." },
   { s: "EVE", t: "NEW", i: 1, note: "Northern rivalry rooted in historic top-flight meetings and physical encounters." },
 
+  { s: "FUL", t: "CHE", i: 4, note: "West London neighbours, a few hundred yards apart across the Thames from Stamford Bridge." },
+  { s: "FUL", t: "QPR", i: 3, note: "West London derby with a long, if lower-key, local history." },
+  { s: "FUL", t: "BRE", i: 3, note: "West London rivalry sharpened as both clubs rose through the divisions together." },
+  { s: "FUL", t: "MIL", i: 1, note: "Rooted in older hooligan-era London rivalries." },
+  { s: "FUL", t: "CRY", i: 1, note: "General South/West London rivalry with limited shared history." },
+
+  { s: "HUD", t: "LEE", i: 5, note: "West Yorkshire's fiercest rivalry, dating back over a century." },
+  { s: "HUD", t: "BRA", i: 3, note: "West Yorkshire mill-town rivalry between neighbouring towns." },
+  { s: "HUD", t: "BAR", i: 2, note: "Yorkshire rivalry sharpened by repeated lower-division meetings." },
+  { s: "HUD", t: "SHW", i: 1, note: "Yorkshire rivalry with a long shared lower-league history." },
+  { s: "HUD", t: "SHU", i: 1, note: "Yorkshire rivalry from repeated Championship meetings." },
+
+  { s: "HUL", t: "LEE", i: 4, note: "Yorkshire rivalry sharpened by repeated Championship promotion battles." },
+  { s: "HUL", t: "SHW", i: 2, note: "Yorkshire rivalry from decades of shared divisions." },
+  { s: "HUL", t: "MID", i: 2, note: "Yorkshire vs Teesside rivalry across the Humber region." },
+  { s: "HUL", t: "GRI", i: 2, note: "The Humber Derby — a fierce, if lower-profile, dockside rivalry." },
+  { s: "HUL", t: "SHU", i: 1, note: "Yorkshire rivalry from shared lower-league history." },
+
+  { s: "IPS", t: "NOR", i: 5, note: "The East Anglian Derby ('Old Farm Derby') — Suffolk vs Norfolk, one of England's fiercest regional rivalries." },
+  { s: "IPS", t: "COL", i: 2, note: "Suffolk vs Essex local rivalry between nearby towns." },
+  { s: "IPS", t: "WHU", i: 1, note: "Rooted in combative FA Cup meetings during Ipswich's late-1970s/80s heyday." },
+  { s: "IPS", t: "LEE", i: 1, note: "Historic title rivals during Ipswich's Bobby Robson-era peak (1980–81/1981–82)." },
+  { s: "IPS", t: "MIL", i: 1, note: "Older hooligan-era rivalry from shared lower-league seasons." },
+
+  { s: "LEE", t: "MUN", i: 5, note: "A bitter Northern rivalry rooted in the historic Lancashire–Yorkshire Roses rivalry — Leeds' fiercest, even if not fully mutual." },
+  { s: "LEE", t: "CHE", i: 3, note: "Rooted in the violent 1970 FA Cup final and its replay." },
+  { s: "LEE", t: "MIL", i: 3, note: "Rooted in some of English football's most notorious hooligan-era clashes." },
+  { s: "LEE", t: "HUD", i: 2, note: "West Yorkshire's fiercest local derby." },
+  { s: "LEE", t: "DER", i: 2, note: "A rivalry sharpened by Brian Clough's spells at both clubs in the 1960s–70s." },
+
+  { s: "LEI", t: "NFO", i: 5, note: "The East Midlands Derby — Leicester's fiercest and most enduring rivalry." },
+  { s: "LEI", t: "DER", i: 4, note: "The other East Midlands Derby, contested since the Victorian era." },
+  { s: "LEI", t: "COV", i: 3, note: "Midlands rivalry between neighbouring cities." },
+  { s: "LEI", t: "AVL", i: 2, note: "East vs West Midlands rivalry sharpened by recent European-qualification races." },
+  { s: "LEI", t: "WBA", i: 1, note: "Midlands rivalry from decades of shared top-flight and Championship seasons." },
+
   { s: "LIV", t: "MUN", i: 5, note: "England's most storied rivalry, amplified by the historic Liverpool–Manchester industrial rivalry." },
   { s: "LIV", t: "MCI", i: 4, note: "The defining title rivalry of the Klopp–Guardiola era." },
   { s: "LIV", t: "EVE", i: 4, note: "The other half of the Merseyside Derby — shared city, fierce bragging rights." },
   { s: "LIV", t: "CHE", i: 3, note: "Repeated Cup and title-race collisions, including the 2005 Champions League semi-final 'Ghost Goal'." },
   { s: "LIV", t: "ARS", i: 2, note: "Historic English-football heavyweights, reignited by recent title-race jostling." },
+
+  { s: "LUT", t: "WAT", i: 5, note: "The M1 Derby ('Hatters vs Hornets') — a fierce Hertfordshire/Bedfordshire rivalry." },
+  { s: "LUT", t: "WHU", i: 2, note: "Rooted in notorious 1980s hooligan-era violence, including the infamous 1985 riot." },
+  { s: "LUT", t: "MIL", i: 2, note: "Older hooligan-era rivalry from shared lower-league history." },
+  { s: "LUT", t: "COL", i: 1, note: "Regional rivalry from shared lower-league promotion races." },
+  { s: "LUT", t: "LEE", i: 1, note: "Rooted in 1980s hooligan-era clashes." },
 
   { s: "MCI", t: "MUN", i: 5, note: "The Manchester Derby — 'noisy neighbours' turned genuine rivals since City's post-2008 rise." },
   { s: "MCI", t: "LIV", i: 4, note: "Mirror of Liverpool's rivalry — the Guardiola vs Klopp title-race era." },
@@ -407,11 +548,89 @@ const RIVALRIES = [
   { s: "MUN", t: "ARS", i: 3, note: "Mirror of Arsenal's rivalry — Cup and title battles that defined an era." },
   { s: "MUN", t: "CHE", i: 2, note: "Mirror of Chelsea's rivalry — repeated Cup finals and title races." },
 
+  { s: "MID", t: "NEW", i: 4, note: "Part of the Tyne–Tees rivalry triangle." },
+  { s: "MID", t: "SUN", i: 4, note: "The Tees–Wear Derby, part of the North East's fierce three-way rivalry." },
+  { s: "MID", t: "LEE", i: 2, note: "Yorkshire vs Teesside rivalry from decades of shared divisions." },
+  { s: "MID", t: "HAR", i: 1, note: "Local Teesside rivalry between neighbouring towns." },
+  { s: "MID", t: "HUL", i: 1, note: "Yorkshire vs Teesside rivalry across the Humber region." },
+
+  { s: "NEW", t: "SUN", i: 5, note: "The Tyne–Wear Derby — one of English football's fiercest and most passionate rivalries." },
+  { s: "NEW", t: "MID", i: 3, note: "Part of the North East's Tyne–Tees–Wear rivalry triangle." },
+  { s: "NEW", t: "MUN", i: 2, note: "Sharpened by the bitter 1995–96 title race, when Newcastle's 12-point lead evaporated." },
+  { s: "NEW", t: "LEE", i: 1, note: "Northern rivalry from decades of shared top-flight seasons." },
+  { s: "NEW", t: "EVE", i: 1, note: "A lower-key Northern rivalry sharpened by frequent Premier League meetings." },
+
+  { s: "NOR", t: "IPS", i: 5, note: "The East Anglian Derby ('Old Farm Derby') — Norfolk vs Suffolk, one of England's fiercest regional rivalries." },
+  { s: "NOR", t: "COL", i: 1, note: "Regional rivalry with Essex neighbours." },
+  { s: "NOR", t: "LEE", i: 1, note: "Rooted in combative 1990s top-flight meetings." },
+  { s: "NOR", t: "PET", i: 1, note: "East Anglian regional rivalry from shared lower-league history." },
+  { s: "NOR", t: "WHU", i: 1, note: "A lower-key rivalry from repeated Championship and Premier League meetings." },
+
+  { s: "NFO", t: "DER", i: 5, note: "The East Midlands Derby ('A52 Derby') — often cited as Forest's fiercest rivalry of all, sharpened by Brian Clough's spells at both clubs." },
+  { s: "NFO", t: "LEI", i: 4, note: "The other East Midlands Derby, one of England's oldest local rivalries." },
+  { s: "NFO", t: "NCO", i: 3, note: "The Nottingham Derby — a cross-city rivalry with the world's oldest professional football club." },
+  { s: "NFO", t: "LEE", i: 1, note: "Sharpened by fierce 1970s title-race rivalry under Brian Clough and Don Revie." },
+  { s: "NFO", t: "WBA", i: 1, note: "Midlands rivalry from decades of shared top-flight and Championship seasons." },
+
+  { s: "SHU", t: "SHW", i: 5, note: "The Steel City Derby — one of England's oldest and fiercest local rivalries." },
+  { s: "SHU", t: "LEE", i: 2, note: "Yorkshire rivalry sharpened by competitive Championship and Premier League meetings." },
+  { s: "SHU", t: "BAR", i: 2, note: "South Yorkshire rivalry between neighbouring towns." },
+  { s: "SHU", t: "ROT", i: 1, note: "South Yorkshire local rivalry between close neighbours." },
+  { s: "SHU", t: "HUL", i: 1, note: "Yorkshire rivalry from shared lower-league history." },
+
+  { s: "SOU", t: "POR", i: 5, note: "The South Coast Derby — one of the most notorious and hostile rivalries in English football." },
+  { s: "SOU", t: "BOU", i: 2, note: "South Coast rivalry sharpened by proximity and recent Premier League meetings." },
+  { s: "SOU", t: "BHA", i: 2, note: "South Coast rivalry between Hampshire and Sussex." },
+  { s: "SOU", t: "RDG", i: 1, note: "M3/M4-corridor rivalry from shared Championship seasons." },
+  { s: "SOU", t: "WHU", i: 1, note: "A lower-key rivalry from repeated top-flight meetings." },
+
+  { s: "STK", t: "PVA", i: 4, note: "The Potteries Derby — a fierce local rivalry between neighbouring Stoke-on-Trent clubs." },
+  { s: "STK", t: "WBA", i: 2, note: "Midlands rivalry from decades of shared top-flight and Championship seasons." },
+  { s: "STK", t: "WOL", i: 2, note: "Midlands rivalry sharpened by frequent Championship meetings." },
+  { s: "STK", t: "CRE", i: 1, note: "Regional rivalry with a nearby Cheshire club." },
+  { s: "STK", t: "LEI", i: 1, note: "A lower-key Midlands rivalry from shared top-flight history." },
+
+  { s: "SUN", t: "NEW", i: 5, note: "The Tyne–Wear Derby — one of English football's fiercest and most passionate rivalries." },
+  { s: "SUN", t: "MID", i: 3, note: "The Tees–Wear Derby, part of the North East's fierce three-way rivalry." },
+  { s: "SUN", t: "HAR", i: 2, note: "A regional North East rivalry with a nearby coastal town." },
+  { s: "SUN", t: "LEE", i: 1, note: "Northern rivalry from shared top-flight history." },
+  { s: "SUN", t: "WBA", i: 1, note: "A lower-key rivalry from shared Championship seasons." },
+
+  { s: "SWA", t: "CAR", i: 5, note: "The South Wales Derby — the fiercest rivalry in Welsh football." },
+  { s: "SWA", t: "BRC", i: 2, note: "Cross-Severn rivalry between South Wales and Bristol." },
+  { s: "SWA", t: "MIL", i: 1, note: "Older hooligan-era rivalry from shared lower-league history." },
+  { s: "SWA", t: "RDG", i: 1, note: "M4-corridor rivalry from repeated Championship promotion battles." },
+  { s: "SWA", t: "WBA", i: 1, note: "A lower-key rivalry from shared Championship and Premier League seasons." },
+
   { s: "TOT", t: "ARS", i: 5, note: "Mirror of Arsenal's rivalry — the North London Derby, England's fiercest local rivalry." },
   { s: "TOT", t: "CHE", i: 4, note: "Mirror of Chelsea's rivalry — West vs North London for top-four places and silverware." },
   { s: "TOT", t: "WHU", i: 3, note: "East vs North London derby with a long history of hostility between fan groups." },
   { s: "TOT", t: "MUN", i: 2, note: "Frequent battles for European qualification and memorable Cup upsets." },
   { s: "TOT", t: "LIV", i: 2, note: "Sharpened by combative Premier League title-race and top-four meetings." },
+
+  { s: "WAT", t: "LUT", i: 5, note: "The M1 Derby ('Hornets vs Hatters') — a fierce Hertfordshire/Bedfordshire rivalry." },
+  { s: "WAT", t: "CRY", i: 2, note: "Fuelled by a notorious 1980s FA Cup semi-final marred by a pitch invasion and player brawl." },
+  { s: "WAT", t: "RDG", i: 1, note: "Home Counties rivalry from shared Championship seasons." },
+  { s: "WAT", t: "QPR", i: 1, note: "London-adjacent rivalry from shared Championship history." },
+  { s: "WAT", t: "WHU", i: 1, note: "A lower-key rivalry from shared top-flight meetings." },
+
+  { s: "WBA", t: "WOL", i: 5, note: "The Black Country Derby — one of English football's oldest and fiercest local rivalries." },
+  { s: "WBA", t: "AVL", i: 4, note: "West Midlands rivals with a long history of combative top-flight meetings." },
+  { s: "WBA", t: "BIR", i: 3, note: "West Midlands rivalry between Birmingham-area neighbours." },
+  { s: "WBA", t: "STK", i: 1, note: "A lower-key Midlands rivalry from shared top-flight history." },
+  { s: "WBA", t: "LEI", i: 1, note: "Midlands rivalry from decades of shared top-flight and Championship seasons." },
+
+  { s: "WHU", t: "MIL", i: 5, note: "One of English football's most notorious and violent local rivalries." },
+  { s: "WHU", t: "TOT", i: 4, note: "East vs North London derby with a long history of hostility between fan groups." },
+  { s: "WHU", t: "CHE", i: 2, note: "London rivalry with a long history of match-day tension." },
+  { s: "WHU", t: "ARS", i: 2, note: "Old East vs North London needle, with a history of hostility between fan groups." },
+  { s: "WHU", t: "LEE", i: 1, note: "Rooted in 1980s hooligan-era clashes." },
+
+  { s: "WOL", t: "WBA", i: 5, note: "The Black Country Derby — one of English football's oldest and fiercest local rivalries." },
+  { s: "WOL", t: "AVL", i: 3, note: "West Midlands rivals with a long history of combative top-flight meetings." },
+  { s: "WOL", t: "BIR", i: 2, note: "West Midlands rivalry between Birmingham-area neighbours." },
+  { s: "WOL", t: "LEI", i: 1, note: "A lower-key Midlands rivalry from shared top-flight history." },
+  { s: "WOL", t: "STK", i: 1, note: "Midlands rivalry sharpened by frequent Championship meetings." },
 ];
 
 const INTENSITY_COLOR = { 1: "var(--int-1)", 2: "var(--int-2)", 3: "var(--int-3)", 4: "var(--int-4)", 5: "var(--int-5)" };
@@ -426,7 +645,9 @@ function isDark() {
 }
 function intHex(i) { return (isDark() ? INTENSITY_HEX_DARK : INTENSITY_HEX_LIGHT)[i]; }
 
-const MAIN_IDS = Object.keys(CLUBS).filter(k => CLUBS[k].group === 'main');
+const MAIN_IDS = Object.keys(CLUBS)
+  .filter(k => CLUBS[k].group === 'main')
+  .sort((a, b) => CLUBS[a].name.localeCompare(CLUBS[b].name));
 
 /* ---------------------------------------------------------------------
    THEME TOGGLE
@@ -469,7 +690,7 @@ function hideTooltip() { tooltip.style.opacity = 0; }
 /* ---------------------------------------------------------------------
    STATE
 --------------------------------------------------------------------- */
-let state = { view: 'network', selected: null };
+let state = { view: 'network', selected: null, search: '' };
 
 /* ---------------------------------------------------------------------
    TEAM FILTER CHIPS
@@ -483,17 +704,20 @@ function buildChips() {
   allChip.onclick = () => { state.selected = null; render(); };
   host.appendChild(allChip);
 
-  MAIN_IDS.forEach(id => {
-    const c = CLUBS[id];
-    const chip = document.createElement('button');
-    chip.className = 'chip' + (state.selected === id ? ' active' : '');
-    chip.style.setProperty('--chip-color', c.color);
-    const dot = document.createElement('span'); dot.className = 'dot';
-    const label = document.createElement('span'); label.textContent = c.name;
-    chip.appendChild(dot); chip.appendChild(label);
-    chip.onclick = () => { state.selected = (state.selected === id ? null : id); render(); };
-    host.appendChild(chip);
-  });
+  const q = state.search.trim().toLowerCase();
+  MAIN_IDS
+    .filter(id => !q || CLUBS[id].name.toLowerCase().includes(q))
+    .forEach(id => {
+      const c = CLUBS[id];
+      const chip = document.createElement('button');
+      chip.className = 'chip' + (state.selected === id ? ' active' : '');
+      chip.style.setProperty('--chip-color', c.color);
+      const dot = document.createElement('span'); dot.className = 'dot';
+      const label = document.createElement('span'); label.textContent = c.name;
+      chip.appendChild(dot); chip.appendChild(label);
+      chip.onclick = () => { state.selected = (state.selected === id ? null : id); render(); };
+      host.appendChild(chip);
+    });
 }
 
 /* ---------------------------------------------------------------------
@@ -508,7 +732,7 @@ function renderSidePanel() {
   if (!state.selected) {
     titleEl.textContent = 'Select a club';
     subEl.textContent = 'Click any node, chip, or matrix row to see its top 5 rivals.';
-    listEl.innerHTML = '<div class="empty-state">Total rivalry links plotted: ' + RIVALRIES.length + ' across ' + MAIN_IDS.length + ' ever-present clubs.</div>';
+    listEl.innerHTML = '<div class="empty-state">Total rivalry links plotted: ' + RIVALRIES.length + ' across ' + MAIN_IDS.length + ' clubs.</div>';
     return;
   }
   const club = CLUBS[state.selected];
@@ -516,7 +740,7 @@ function renderSidePanel() {
   const b = document.createElement('span'); b.className = 'badge'; b.style.background = club.color; b.textContent = club.short;
   const t = document.createElement('span'); t.textContent = club.name;
   titleEl.appendChild(b); titleEl.appendChild(t);
-  subEl.textContent = "Top 5 rivals, ranked by intensity (as rated by " + club.name + " fans).";
+  subEl.textContent = club.name + " played " + club.seasons + " of the last 10 Premier League seasons. Top 5 rivals, ranked by intensity.";
 
   const rivals = RIVALRIES.filter(r => r.s === state.selected).sort((a, b) => b.i - a.i);
   rivals.forEach((r, idx) => {
@@ -551,7 +775,7 @@ function renderNetwork() {
   svg.selectAll('*').remove();
   const el = document.getElementById('viz-svg');
   const width = el.clientWidth || 700;
-  const height = 560;
+  const height = 720;
   svg.attr('viewBox', [0, 0, width, height]);
 
   const visibleEdges = state.selected ? RIVALRIES.filter(r => r.s === state.selected) : RIVALRIES;
@@ -567,7 +791,7 @@ function renderNetwork() {
   const links = visibleEdges.map(r => ({ source: r.s, target: r.t, intensity: r.i, note: r.note }));
 
   function radiusFor(d) {
-    return d.group === 'main' ? 20 + Math.min(14, d.weight * 0.5) : 13;
+    return d.group === 'main' ? 14 + Math.min(13, d.weight * 0.35) : 9;
   }
 
   const defs = svg.append('defs');
@@ -592,21 +816,23 @@ function renderNetwork() {
 
   svg.call(d3.zoom().scaleExtent([0.5, 3]).on('zoom', (ev) => g.attr('transform', ev.transform)));
 
+  const focused = !!state.selected;
+
   sim = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(links).id(d => d.id).distance(d => 210 - d.intensity * 10).strength(0.4))
-    .force('charge', d3.forceManyBody().strength(-620))
+    .force('link', d3.forceLink(links).id(d => d.id).distance(d => focused ? (190 - d.intensity * 10) : (110 - d.intensity * 6)).strength(focused ? 0.45 : 0.25))
+    .force('charge', d3.forceManyBody().strength(focused ? -420 : -170))
     .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('collision', d3.forceCollide().radius(d => radiusFor(d) + 26));
+    .force('collision', d3.forceCollide().radius(d => radiusFor(d) + (focused ? 24 : 6)));
 
   const linkSel = g.selectAll('.link')
     .data(links)
     .join('path')
     .attr('class', 'link')
     .attr('stroke', d => intHex(d.intensity))
-    .attr('stroke-width', d => 1.5 + d.intensity * 1.3)
+    .attr('stroke-width', d => focused ? (1.5 + d.intensity * 1.3) : (0.6 + d.intensity * 0.45))
     .attr('stroke-linecap', 'round')
-    .attr('opacity', 0.85)
-    .attr('marker-end', d => 'url(#arrow-' + d.intensity + ')');
+    .attr('opacity', focused ? 0.85 : 0.3)
+    .attr('marker-end', d => focused ? ('url(#arrow-' + d.intensity + ')') : null);
 
   const linkHit = g.selectAll('.link-hit')
     .data(links)
@@ -641,7 +867,10 @@ function renderNetwork() {
     .attr('class', d => 'node-label' + (d.group === 'main' ? '' : ' other'))
     .attr('text-anchor', 'middle')
     .attr('dy', d => radiusFor(d) + 13)
-    .text(d => d.group === 'main' ? d.name : d.short);
+    .text(d => {
+      if (d.group === 'main') return d.name;
+      return focused ? d.short : '';
+    });
 
   nodeG.on('click', (ev, d) => {
     if (d.group === 'main') { state.selected = (state.selected === d.id ? null : d.id); render(); }
@@ -652,8 +881,8 @@ function renderNetwork() {
     showTooltip(ev.clientX, ev.clientY, {
       title: d.name,
       body: d.group === 'main'
-        ? ('Ever-present club · ' + out + ' rivals tracked · total rivalry weight ' + d.weight)
-        : ('Named as a rival by: ' + asTarget.map(r => CLUBS[r.s].name).join(', '))
+        ? ('Played ' + d.seasons + '/10 recent Premier League seasons · ' + out + ' rivals tracked · rivalry weight ' + d.weight)
+        : ('Not in the Premier League in the last 10 seasons · named as a rival by: ' + asTarget.map(r => CLUBS[r.s].name).join(', '))
     });
   });
   nodeG.on('mouseleave', hideTooltip);
@@ -804,6 +1033,11 @@ document.getElementById('viewSeg').addEventListener('click', (ev) => {
   if (!btn) return;
   state.view = btn.dataset.view;
   render();
+});
+
+document.getElementById('teamSearch').addEventListener('input', (ev) => {
+  state.search = ev.target.value;
+  buildChips();
 });
 
 window.addEventListener('resize', () => { if (state.view === 'network') renderNetwork(); });
