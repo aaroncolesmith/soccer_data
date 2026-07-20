@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Premier League Rivalries — The Decade Regulars</title>
+<meta name="description" content="An interactive look at the top-5 rivals for every club that has stayed in the Premier League for the last 10 seasons, rated for intensity." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%BD%3C/text%3E%3C/svg%3E" />
+<script src="vendor/d3.v7.min.js"></script>
+<style>
+  :root {
+    color-scheme: light dark;
+    --surface: #f7f7f5;
+    --surface-raised: #ffffff;
+    --ink: #17181c;
+    --ink-secondary: #4b4d55;
+    --ink-muted: #7a7c85;
+    --border: #dfe0dc;
+    --border-soft: #ebebe8;
+    --accent: #1b458f;
+    --shadow: 0 1px 2px rgba(20,20,20,.04), 0 8px 24px rgba(20,20,20,.06);
+    --int-1: #fbdcd6;
+    --int-2: #f2a99b;
+    --int-3: #e6725c;
+    --int-4: #c8412c;
+    --int-5: #8f1d13;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  :root[data-theme="dark"] {
+    --surface: #16171a;
+    --surface-raised: #1e2024;
+    --ink: #f1f1ef;
+    --ink-secondary: #c2c3c9;
+    --ink-muted: #8b8d97;
+    --border: #33353b;
+    --border-soft: #26282d;
+    --accent: #7fa8dd;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.4);
+    --int-1: #4a2420;
+    --int-2: #7a3527;
+    --int-3: #ab472e;
+    --int-4: #d85f39;
+    --int-5: #f28b5b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #16171a;
+      --surface-raised: #1e2024;
+      --ink: #f1f1ef;
+      --ink-secondary: #c2c3c9;
+      --ink-muted: #8b8d97;
+      --border: #33353b;
+      --border-soft: #26282d;
+      --accent: #7fa8dd;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.4);
+      --int-1: #4a2420;
+      --int-2: #7a3527;
+      --int-3: #ab472e;
+      --int-4: #d85f39;
+      --int-5: #f28b5b;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font);
+  }
+  body { padding: 0 0 64px; }
+  a { color: var(--accent); }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+
+  header.top {
+    padding: 40px 0 24px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  header.top h1 {
+    font-size: clamp(26px, 4vw, 36px);
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+  }
+  header.top p.sub {
+    margin: 0;
+    color: var(--ink-secondary);
+    font-size: 15px;
+    max-width: 720px;
+    line-height: 1.5;
+  }
+  .theme-toggle {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    color: var(--ink-secondary);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .top-inner { position: relative; }
+
+  /* Controls */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center;
+    margin: 20px 0;
+  }
+  .seg {
+    display: inline-flex;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .seg button {
+    border: none; background: transparent; color: var(--ink-secondary);
+    font-size: 13px; padding: 7px 14px; border-radius: 7px; cursor: pointer;
+    font-family: var(--font); font-weight: 500;
+  }
+  .seg button.active { background: var(--accent); color: #fff; }
+  .spacer { flex: 1; }
+
+  .team-filter {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+    color: var(--ink-secondary);
+    border-radius: 999px;
+    padding: 5px 11px 5px 6px;
+    font-size: 12.5px;
+    cursor: pointer;
+    font-family: var(--font);
+  }
+  .chip.active { border-color: var(--chip-color, var(--accent)); color: var(--ink); background: color-mix(in srgb, var(--chip-color, var(--accent)) 14%, var(--surface-raised)); }
+  .chip .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--chip-color, var(--accent)); flex: none; }
+  .chip.all { font-weight: 600; }
+
+  /* Layout: viz + side panel */
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 320px;
+    gap: 18px;
+    margin-top: 8px;
+  }
+  @media (max-width: 880px) {
+    .stage { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: var(--surface-raised);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+  .viz-panel { padding: 8px; position: relative; min-height: 560px; }
+  #viz-svg { width: 100%; height: 560px; display: block; }
+  .viz-hint {
+    position: absolute; left: 22px; bottom: 16px;
+    font-size: 12px; color: var(--ink-muted);
+    pointer-events: none;
+  }
+
+  .side-panel { padding: 18px; }
+  .side-panel h2 {
+    font-size: 16px; margin: 0 0 2px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .side-panel .side-sub { font-size: 12.5px; color: var(--ink-muted); margin: 0 0 14px; }
+  .badge {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 10.5px; font-weight: 700;
+    flex: none;
+    box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.35);
+  }
+  .rival-row {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-top: 1px solid var(--border-soft);
+    cursor: pointer;
+  }
+  .rival-row:first-of-type { border-top: none; }
+  .rival-row .rank { color: var(--ink-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .rival-row .name { font-size: 13.5px; font-weight: 600; }
+  .rival-row .bar-track { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--border-soft); margin-top: 2px; overflow: hidden; }
+  .rival-row .bar-fill { height: 100%; border-radius: 3px; }
+  .rival-row .int-label { font-size: 11.5px; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+  .rival-blurb {
+    font-size: 12px; color: var(--ink-secondary); line-height: 1.45;
+    padding: 0 0 10px 34px; margin-top: -4px;
+    display: none;
+  }
+  .rival-row.open + .rival-blurb { display: block; }
+
+  .empty-state {
+    color: var(--ink-muted); font-size: 13px; padding: 30px 4px; text-align: center;
+  }
+
+  /* Legend */
+  .legend-row {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    font-size: 12px; color: var(--ink-muted); margin: 14px 2px 0;
+  }
+  .legend-scale { display: flex; align-items: center; gap: 4px; }
+  .legend-scale .sw { width: 16px; height: 10px; border-radius: 2px; }
+  .legend-groupdot { width: 9px; height: 9px; border-radius: 50%; display:inline-block; margin-right: 4px; }
+
+  /* Matrix */
+  .matrix-wrap { overflow-x: auto; padding: 14px; }
+  table.matrix { border-collapse: collapse; font-size: 12px; margin: 0 auto; }
+  table.matrix th, table.matrix td { padding: 0; text-align: center; }
+  table.matrix th.colhead {
+    height: 120px; width: 40px; vertical-align: bottom; padding-bottom: 6px;
+  }
+  table.matrix th.colhead span {
+    display: inline-block; transform: rotate(-40deg); transform-origin: left bottom;
+    white-space: nowrap; font-weight: 600; color: var(--ink-secondary); font-size: 11.5px;
+  }
+  table.matrix th.rowhead {
+    text-align: right; padding-right: 10px; font-weight: 600; color: var(--ink-secondary);
+    white-space: nowrap; font-size: 12px;
+  }
+  table.matrix td.cell { width: 40px; height: 40px; position: relative; }
+  table.matrix td.cell .box {
+    width: 32px; height: 32px; border-radius: 6px; margin: 4px auto;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+    cursor: pointer;
+  }
+  table.matrix td.cell.empty .box { background: transparent; }
+  table.matrix td.cell.diag .box { background: var(--border-soft); color: var(--ink-muted); }
+
+  /* Table view */
+  .table-wrap { padding: 6px 18px 18px; overflow-x: auto; }
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.data-table th {
+    text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--ink-muted); border-bottom: 1px solid var(--border); padding: 10px 12px;
+    position: sticky; top: 0; background: var(--surface-raised);
+  }
+  table.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  table.data-table td.num { font-variant-numeric: tabular-nums; text-align: center; }
+  table.data-table tr:hover td { background: var(--border-soft); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12.5px;
+  }
+  .stars { letter-spacing: 1px; }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed; pointer-events: none; z-index: 50;
+    background: var(--ink); color: var(--surface);
+    border-radius: 8px; padding: 10px 12px; font-size: 12.5px; line-height: 1.4;
+    max-width: 260px; box-shadow: var(--shadow); opacity: 0; transition: opacity .1s ease;
+  }
+  :root[data-theme="dark"] .tooltip, @media (prefers-color-scheme: dark) { }
+  .tooltip .tt-title { font-weight: 700; margin-bottom: 3px; font-size: 13px; }
+  .tooltip .tt-value { font-weight: 700; }
+
+  footer.foot {
+    margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--border-soft);
+    font-size: 12px; color: var(--ink-muted); line-height: 1.6;
+  }
+  footer.foot a { color: var(--ink-muted); text-decoration: underline; }
+
+  .node-label { font-size: 11px; font-weight: 700; fill: var(--ink); pointer-events: none; }
+  .node-label.other { font-weight: 500; fill: var(--ink-secondary); }
+  .link { fill: none; }
+  .link-hit { fill: none; stroke: transparent; cursor: pointer; }
+  .arrowhead { fill-opacity: .9; }
+</style>
+</head>
+<body data-theme="">
+<div class="wrap">
+  <header class="top">
+    <div class="top-inner">
+      <button class="theme-toggle" id="themeToggle" type="button">🌓 Theme</button>
+      <h1>Premier League Rivalries</h1>
+      <p class="sub">
+        Eight clubs have stayed in the Premier League every one of the last 10 seasons
+        (2016&#8211;17 through 2025&#8211;26) without being relegated: Arsenal, Chelsea, Crystal Palace,
+        Everton, Liverpool, Manchester City, Manchester United and Tottenham Hotspur.
+        For each, here are their fans' five most hated rivals, rated 1 (mild needle) to 5 (blood feud).
+      </p>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="seg" id="viewSeg">
+      <button data-view="network" class="active">Network</button>
+      <button data-view="matrix">Matrix</button>
+      <button data-view="table">Table</button>
+    </div>
+    <div class="team-filter" id="teamFilter"></div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="stage">
+    <div class="panel viz-panel">
+      <svg id="viz-svg"></svg>
+      <div id="matrixHost" class="matrix-wrap" style="display:none;"></div>
+      <div id="tableHost" class="table-wrap" style="display:none;"></div>
+      <div class="viz-hint" id="vizHint">Drag nodes &middot; click a club to focus its rivalries &middot; hover a link for details</div>
+    </div>
+    <div class="panel side-panel">
+      <h2 id="sideTitle">Select a club</h2>
+      <p class="side-sub" id="sideSub">Click any node, chip, or matrix row to see its top 5 rivals.</p>
+      <div id="rivalList"></div>
+    </div>
+  </div>
+
+  <div class="legend-row">
+    <span><span class="legend-groupdot" style="background:var(--accent)"></span>Ever-present club (10/10 seasons)</span>
+    <span><span class="legend-groupdot" style="background:#9a9ba3"></span>Rival club (not ever-present)</span>
+    <span class="legend-scale">Intensity:
+      <span class="sw" style="background:var(--int-1)"></span>1
+      <span class="sw" style="background:var(--int-2)"></span>2
+      <span class="sw" style="background:var(--int-3)"></span>3
+      <span class="sw" style="background:var(--int-4)"></span>4
+      <span class="sw" style="background:var(--int-5)"></span>5 (fiercest)
+    </span>
+  </div>
+
+  <footer class="foot">
+    Ever-present list derived from Premier League season-by-season promotion/relegation results, 2016&#8211;17
+    through 2025&#8211;26. Rivalry selections and intensity ratings are a synthesis of long-running fan-rivalry
+    surveys (including the widely cited "League of Love and Hate" fan census) and documented club history
+    &mdash; treat the 1&#8211;5 scores as an editorial estimate of intensity, not an exact measurement.
+    Rival clubs shown outside the ever-present eight (e.g. West Ham, Leeds, Brighton, Millwall, Charlton, Watford, Newcastle)
+    are included as rivalry targets only; their own outgoing rivalries aren't charted here.
+  </footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+/* ---------------------------------------------------------------------
+   DATA
+--------------------------------------------------------------------- */
+const CLUBS = {
+  ARS: { name: "Arsenal",            short: "ARS", color: "#EF0107", group: "main" },
+  CHE: { name: "Chelsea",             short: "CHE", color: "#034694", group: "main" },
+  CRY: { name: "Crystal Palace",      short: "CRY", color: "#1B458F", group: "main" },
+  EVE: { name: "Everton",             short: "EVE", color: "#003399", group: "main" },
+  LIV: { name: "Liverpool",           short: "LIV", color: "#C8102E", group: "main" },
+  MCI: { name: "Manchester City",     short: "MCI", color: "#6CABDD", group: "main" },
+  MUN: { name: "Manchester United",   short: "MUN", color: "#DA291C", group: "main" },
+  TOT: { name: "Tottenham Hotspur",   short: "TOT", color: "#132257", group: "main" },
+  WHU: { name: "West Ham United",     short: "WHU", color: "#7A263A", group: "other" },
+  LEE: { name: "Leeds United",        short: "LEE", color: "#FFCD00", group: "other" },
+  BHA: { name: "Brighton & Hove Albion", short: "BHA", color: "#0057B8", group: "other" },
+  MIL: { name: "Millwall",            short: "MIL", color: "#00234B", group: "other" },
+  CHA: { name: "Charlton Athletic",   short: "CHA", color: "#D2122E", group: "other" },
+  WAT: { name: "Watford",             short: "WAT", color: "#FBEE23", group: "other" },
+  NEW: { name: "Newcastle United",    short: "NEW", color: "#241F20", group: "other" },
+};
+
+// directed: source club's fans -> rival, intensity 1-5, short rationale
+const RIVALRIES = [
+  { s: "ARS", t: "TOT", i: 5, note: "North London Derby — English football's fiercest rivalry, rooted in Arsenal's contested 1913 move into Tottenham's turf." },
+  { s: "ARS", t: "CHE", i: 4, note: "West End rivals sharpened by repeated top-four and trophy battles through the 2000s–2010s." },
+  { s: "ARS", t: "MUN", i: 3, note: "Defined the Premier League's title races of the late 1990s/2000s, including 2004's 'Battle of the Buffet'." },
+  { s: "ARS", t: "WHU", i: 2, note: "Old East vs North London needle, with a history of hostility between fan groups." },
+  { s: "ARS", t: "LIV", i: 2, note: "Two of England's most decorated clubs, with recent title-race collisions raising the temperature." },
+
+  { s: "CHE", t: "TOT", i: 4, note: "West vs North London derby, intensified since Chelsea's Abramovich-era rise to the top." },
+  { s: "CHE", t: "ARS", i: 4, note: "Mirror of Arsenal's rivalry — two West/North London giants trading top-four and trophy blows." },
+  { s: "CHE", t: "LEE", i: 3, note: "Rooted in the violent 1967 FA Cup semi-final and the notorious 1970 FA Cup final replay." },
+  { s: "CHE", t: "MUN", i: 3, note: "Title and Cup rivals through the 2000s–2010s, including two Champions League final meetings." },
+  { s: "CHE", t: "WHU", i: 2, note: "London rivalry with a long history of match-day tension between supporters." },
+
+  { s: "CRY", t: "BHA", i: 5, note: "The M23 Derby — a modern rivalry born from a 1976 power struggle between the clubs' rival managers." },
+  { s: "CRY", t: "MIL", i: 3, note: "South London derby with a hostile, decades-long history of crowd trouble." },
+  { s: "CRY", t: "CHA", i: 2, note: "South-east London neighbours with a long-standing local rivalry." },
+  { s: "CRY", t: "WAT", i: 2, note: "Fuelled by a notorious 1980s FA Cup semi-final marred by a pitch invasion and player brawl." },
+  { s: "CRY", t: "MUN", i: 1, note: "More general antipathy toward United's dominance than a rivalry rooted in shared history." },
+
+  { s: "EVE", t: "LIV", i: 5, note: "The Merseyside Derby — the most-played fixture in English top-flight history, separated by Stanley Park." },
+  { s: "EVE", t: "MUN", i: 2, note: "Sharpened by 1980s title battles and numerous combative Cup meetings." },
+  { s: "EVE", t: "CHE", i: 2, note: "A modern needle fuelled by combative Premier League meetings and managerial friction." },
+  { s: "EVE", t: "MCI", i: 2, note: "Grown from repeated clashes over European qualification places." },
+  { s: "EVE", t: "NEW", i: 1, note: "Northern rivalry rooted in historic top-flight meetings and physical encounters." },
+
+  { s: "LIV", t: "MUN", i: 5, note: "England's most storied rivalry, amplified by the historic Liverpool–Manchester industrial rivalry." },
+  { s: "LIV", t: "MCI", i: 4, note: "The defining title rivalry of the Klopp–Guardiola era." },
+  { s: "LIV", t: "EVE", i: 4, note: "The other half of the Merseyside Derby — shared city, fierce bragging rights." },
+  { s: "LIV", t: "CHE", i: 3, note: "Repeated Cup and title-race collisions, including the 2005 Champions League semi-final 'Ghost Goal'." },
+  { s: "LIV", t: "ARS", i: 2, note: "Historic English-football heavyweights, reignited by recent title-race jostling." },
+
+  { s: "MCI", t: "MUN", i: 5, note: "The Manchester Derby — 'noisy neighbours' turned genuine rivals since City's post-2008 rise." },
+  { s: "MCI", t: "LIV", i: 4, note: "Mirror of Liverpool's rivalry — the Guardiola vs Klopp title-race era." },
+  { s: "MCI", t: "ARS", i: 3, note: "Repeated title-race rivals throughout the 2020s Premier League." },
+  { s: "MCI", t: "CHE", i: 2, note: "Frequent Cup final and title rivals during City's period of dominance." },
+  { s: "MCI", t: "TOT", i: 1, note: "Sharpened by competitive top-four and title-race meetings." },
+
+  { s: "MUN", t: "LIV", i: 5, note: "Mirror of Liverpool's rivalry — the two most successful English clubs, and the fiercest rivalry in the game." },
+  { s: "MUN", t: "MCI", i: 5, note: "Mirror of City's rivalry — the Manchester Derby's stakes rose sharply after City's 2008 takeover." },
+  { s: "MUN", t: "LEE", i: 3, note: "A bitter Northern rivalry with roots in the historic Lancashire–Yorkshire Roses rivalry." },
+  { s: "MUN", t: "ARS", i: 3, note: "Mirror of Arsenal's rivalry — Cup and title battles that defined an era." },
+  { s: "MUN", t: "CHE", i: 2, note: "Mirror of Chelsea's rivalry — repeated Cup finals and title races." },
+
+  { s: "TOT", t: "ARS", i: 5, note: "Mirror of Arsenal's rivalry — the North London Derby, England's fiercest local rivalry." },
+  { s: "TOT", t: "CHE", i: 4, note: "Mirror of Chelsea's rivalry — West vs North London for top-four places and silverware." },
+  { s: "TOT", t: "WHU", i: 3, note: "East vs North London derby with a long history of hostility between fan groups." },
+  { s: "TOT", t: "MUN", i: 2, note: "Frequent battles for European qualification and memorable Cup upsets." },
+  { s: "TOT", t: "LIV", i: 2, note: "Sharpened by combative Premier League title-race and top-four meetings." },
+];
+
+const INTENSITY_COLOR = { 1: "var(--int-1)", 2: "var(--int-2)", 3: "var(--int-3)", 4: "var(--int-4)", 5: "var(--int-5)" };
+const INTENSITY_HEX_LIGHT = { 1: "#fbdcd6", 2: "#f2a99b", 3: "#e6725c", 4: "#c8412c", 5: "#8f1d13" };
+const INTENSITY_HEX_DARK  = { 1: "#4a2420", 2: "#7a3527", 3: "#ab472e", 4: "#d85f39", 5: "#f28b5b" };
+
+function isDark() {
+  const t = document.documentElement.getAttribute('data-theme');
+  if (t === 'dark') return true;
+  if (t === 'light') return false;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function intHex(i) { return (isDark() ? INTENSITY_HEX_DARK : INTENSITY_HEX_LIGHT)[i]; }
+
+const MAIN_IDS = Object.keys(CLUBS).filter(k => CLUBS[k].group === 'main');
+
+/* ---------------------------------------------------------------------
+   THEME TOGGLE
+--------------------------------------------------------------------- */
+(function () {
+  const root = document.documentElement;
+  const saved = localStorage.getItem('pl-rivalry-theme');
+  if (saved) root.setAttribute('data-theme', saved);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const cur = root.getAttribute('data-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('pl-rivalry-theme', next);
+    render();
+  });
+})();
+
+/* ---------------------------------------------------------------------
+   TOOLTIP
+--------------------------------------------------------------------- */
+const tooltip = document.getElementById('tooltip');
+function showTooltip(x, y, html) {
+  tooltip.innerHTML = '';
+  const title = document.createElement('div'); title.className = 'tt-title';
+  const body = document.createElement('div');
+  title.textContent = html.title;
+  body.textContent = html.body;
+  tooltip.appendChild(title);
+  tooltip.appendChild(body);
+  tooltip.style.opacity = 1;
+  const pad = 16;
+  let left = x + pad, top = y + pad;
+  if (left + 270 > window.innerWidth) left = x - 270 - pad;
+  if (top + 90 > window.innerHeight) top = y - 90 - pad;
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
+}
+function hideTooltip() { tooltip.style.opacity = 0; }
+
+/* ---------------------------------------------------------------------
+   STATE
+--------------------------------------------------------------------- */
+let state = { view: 'network', selected: null };
+
+/* ---------------------------------------------------------------------
+   TEAM FILTER CHIPS
+--------------------------------------------------------------------- */
+function buildChips() {
+  const host = document.getElementById('teamFilter');
+  host.innerHTML = '';
+  const allChip = document.createElement('button');
+  allChip.className = 'chip all' + (state.selected === null ? ' active' : '');
+  allChip.textContent = 'All clubs';
+  allChip.onclick = () => { state.selected = null; render(); };
+  host.appendChild(allChip);
+
+  MAIN_IDS.forEach(id => {
+    const c = CLUBS[id];
+    const chip = document.createElement('button');
+    chip.className = 'chip' + (state.selected === id ? ' active' : '');
+    chip.style.setProperty('--chip-color', c.color);
+    const dot = document.createElement('span'); dot.className = 'dot';
+    const label = document.createElement('span'); label.textContent = c.name;
+    chip.appendChild(dot); chip.appendChild(label);
+    chip.onclick = () => { state.selected = (state.selected === id ? null : id); render(); };
+    host.appendChild(chip);
+  });
+}
+
+/* ---------------------------------------------------------------------
+   SIDE PANEL
+--------------------------------------------------------------------- */
+function renderSidePanel() {
+  const titleEl = document.getElementById('sideTitle');
+  const subEl = document.getElementById('sideSub');
+  const listEl = document.getElementById('rivalList');
+  listEl.innerHTML = '';
+
+  if (!state.selected) {
+    titleEl.textContent = 'Select a club';
+    subEl.textContent = 'Click any node, chip, or matrix row to see its top 5 rivals.';
+    listEl.innerHTML = '<div class="empty-state">Total rivalry links plotted: ' + RIVALRIES.length + ' across ' + MAIN_IDS.length + ' ever-present clubs.</div>';
+    return;
+  }
+  const club = CLUBS[state.selected];
+  titleEl.innerHTML = '';
+  const b = document.createElement('span'); b.className = 'badge'; b.style.background = club.color; b.textContent = club.short;
+  const t = document.createElement('span'); t.textContent = club.name;
+  titleEl.appendChild(b); titleEl.appendChild(t);
+  subEl.textContent = "Top 5 rivals, ranked by intensity (as rated by " + club.name + " fans).";
+
+  const rivals = RIVALRIES.filter(r => r.s === state.selected).sort((a, b) => b.i - a.i);
+  rivals.forEach((r, idx) => {
+    const rc = CLUBS[r.t];
+    const row = document.createElement('div');
+    row.className = 'rival-row';
+    row.innerHTML = `
+      <span class="rank">${idx + 1}</span>
+      <span class="name">${rc.name}</span>
+      <span class="int-label">${'★'.repeat(r.i)}${'☆'.repeat(5 - r.i)}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${r.i * 20}%;background:${intHex(r.i)}"></span></span>
+    `;
+    const blurb = document.createElement('div');
+    blurb.className = 'rival-blurb';
+    blurb.textContent = r.note;
+    row.addEventListener('click', () => {
+      const opening = !row.classList.contains('open');
+      listEl.querySelectorAll('.rival-row').forEach(el => el.classList.remove('open'));
+      if (opening) row.classList.add('open');
+    });
+    listEl.appendChild(row);
+    listEl.appendChild(blurb);
+  });
+}
+
+/* ---------------------------------------------------------------------
+   NETWORK VIEW (D3 force layout)
+--------------------------------------------------------------------- */
+let sim = null;
+function renderNetwork() {
+  const svg = d3.select('#viz-svg');
+  svg.selectAll('*').remove();
+  const el = document.getElementById('viz-svg');
+  const width = el.clientWidth || 700;
+  const height = 560;
+  svg.attr('viewBox', [0, 0, width, height]);
+
+  const visibleEdges = state.selected ? RIVALRIES.filter(r => r.s === state.selected) : RIVALRIES;
+  const nodeIds = new Set();
+  visibleEdges.forEach(r => { nodeIds.add(r.s); nodeIds.add(r.t); });
+  if (!state.selected) MAIN_IDS.forEach(id => nodeIds.add(id));
+
+  const nodes = Array.from(nodeIds).map(id => ({ id, ...CLUBS[id] }));
+  const linkCountBy = {};
+  RIVALRIES.forEach(r => { linkCountBy[r.s] = (linkCountBy[r.s] || 0) + r.i; linkCountBy[r.t] = (linkCountBy[r.t] || 0) + r.i; });
+  nodes.forEach(n => { n.weight = linkCountBy[n.id] || 1; });
+
+  const links = visibleEdges.map(r => ({ source: r.s, target: r.t, intensity: r.i, note: r.note }));
+
+  function radiusFor(d) {
+    return d.group === 'main' ? 20 + Math.min(14, d.weight * 0.5) : 13;
+  }
+
+  const defs = svg.append('defs');
+  [1,2,3,4,5].forEach(i => {
+    const size = 7 + i * 1.4;
+    defs.append('marker')
+      .attr('id', 'arrow-' + i)
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 9)
+      .attr('refY', 0)
+      .attr('markerWidth', size)
+      .attr('markerHeight', size)
+      .attr('markerUnits', 'userSpaceOnUse')
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('class', 'arrowhead')
+      .attr('fill', intHex(i));
+  });
+
+  const g = svg.append('g');
+
+  svg.call(d3.zoom().scaleExtent([0.5, 3]).on('zoom', (ev) => g.attr('transform', ev.transform)));
+
+  sim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(d => 210 - d.intensity * 10).strength(0.4))
+    .force('charge', d3.forceManyBody().strength(-620))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(d => radiusFor(d) + 26));
+
+  const linkSel = g.selectAll('.link')
+    .data(links)
+    .join('path')
+    .attr('class', 'link')
+    .attr('stroke', d => intHex(d.intensity))
+    .attr('stroke-width', d => 1.5 + d.intensity * 1.3)
+    .attr('stroke-linecap', 'round')
+    .attr('opacity', 0.85)
+    .attr('marker-end', d => 'url(#arrow-' + d.intensity + ')');
+
+  const linkHit = g.selectAll('.link-hit')
+    .data(links)
+    .join('path')
+    .attr('class', 'link-hit')
+    .attr('stroke-width', 16)
+    .on('mousemove', (ev, d) => {
+      const s = CLUBS[typeof d.source === 'object' ? d.source.id : d.source];
+      const t = CLUBS[typeof d.target === 'object' ? d.target.id : d.target];
+      showTooltip(ev.clientX, ev.clientY, { title: s.name + ' → ' + t.name + '  ·  Intensity ' + d.intensity + '/5', body: d.note });
+    })
+    .on('mouseleave', hideTooltip);
+
+  const nodeG = g.selectAll('.node')
+    .data(nodes, d => d.id)
+    .join('g')
+    .attr('class', 'node')
+    .style('cursor', 'pointer')
+    .call(d3.drag()
+      .on('start', (ev, d) => { if (!ev.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+      .on('end', (ev, d) => { if (!ev.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+  nodeG.append('circle')
+    .attr('r', d => radiusFor(d))
+    .attr('fill', d => d.color)
+    .attr('stroke', 'var(--surface-raised)')
+    .attr('stroke-width', d => d.group === 'main' ? 3 : 2)
+    .attr('opacity', d => d.group === 'main' ? 1 : 0.85);
+
+  nodeG.append('text')
+    .attr('class', d => 'node-label' + (d.group === 'main' ? '' : ' other'))
+    .attr('text-anchor', 'middle')
+    .attr('dy', d => radiusFor(d) + 13)
+    .text(d => d.group === 'main' ? d.name : d.short);
+
+  nodeG.on('click', (ev, d) => {
+    if (d.group === 'main') { state.selected = (state.selected === d.id ? null : d.id); render(); }
+  });
+  nodeG.on('mousemove', (ev, d) => {
+    const out = RIVALRIES.filter(r => r.s === d.id).length;
+    const asTarget = RIVALRIES.filter(r => r.t === d.id);
+    showTooltip(ev.clientX, ev.clientY, {
+      title: d.name,
+      body: d.group === 'main'
+        ? ('Ever-present club · ' + out + ' rivals tracked · total rivalry weight ' + d.weight)
+        : ('Named as a rival by: ' + asTarget.map(r => CLUBS[r.s].name).join(', '))
+    });
+  });
+  nodeG.on('mouseleave', hideTooltip);
+
+  sim.on('tick', () => {
+    linkSel.attr('d', d => linkPath(d));
+    linkHit.attr('d', d => linkPath(d));
+    nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+  });
+
+  function linkPath(d) {
+    const sx = d.source.x, sy = d.source.y, tx = d.target.x, ty = d.target.y;
+    const dx = tx - sx, dy = ty - sy;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const pullback = radiusFor(d.target) + 4;
+    const ex = tx - (dx / dist) * pullback;
+    const ey = ty - (dy / dist) * pullback;
+    return `M${sx},${sy}L${ex},${ey}`;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   MATRIX VIEW
+--------------------------------------------------------------------- */
+function renderMatrix() {
+  const host = document.getElementById('matrixHost');
+  host.innerHTML = '';
+  const rowIds = MAIN_IDS;
+  const colIds = Array.from(new Set(RIVALRIES.map(r => r.t).concat(MAIN_IDS)));
+  colIds.sort((a, b) => (CLUBS[b].group === 'main') - (CLUBS[a].group === 'main') || CLUBS[a].name.localeCompare(CLUBS[b].name));
+
+  const lookup = {};
+  RIVALRIES.forEach(r => { lookup[r.s + '|' + r.t] = r; });
+
+  const table = document.createElement('table');
+  table.className = 'matrix';
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  headRow.appendChild(document.createElement('th'));
+  colIds.forEach(cid => {
+    const th = document.createElement('th'); th.className = 'colhead';
+    const span = document.createElement('span'); span.textContent = CLUBS[cid].name;
+    th.appendChild(span);
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  rowIds.forEach(rid => {
+    const tr = document.createElement('tr');
+    if (state.selected && state.selected !== rid) tr.style.opacity = 0.35;
+    const th = document.createElement('th'); th.className = 'rowhead'; th.textContent = CLUBS[rid].name;
+    th.style.cursor = 'pointer';
+    th.onclick = () => { state.selected = (state.selected === rid ? null : rid); render(); };
+    tr.appendChild(th);
+    colIds.forEach(cid => {
+      const td = document.createElement('td'); td.className = 'cell';
+      const box = document.createElement('div'); box.className = 'box';
+      if (rid === cid) {
+        td.classList.add('diag'); box.textContent = CLUBS[rid].short;
+        td.classList.add('diag');
+      } else {
+        const rec = lookup[rid + '|' + cid];
+        if (rec) {
+          box.style.background = intHex(rec.i);
+          box.textContent = rec.i;
+          box.onmousemove = (ev) => showTooltip(ev.clientX, ev.clientY, {
+            title: CLUBS[rid].name + ' → ' + CLUBS[cid].name + '  ·  Intensity ' + rec.i + '/5',
+            body: rec.note
+          });
+          box.onmouseleave = hideTooltip;
+          box.onclick = () => { state.selected = rid; render(); };
+        } else {
+          td.classList.add('empty');
+        }
+      }
+      td.appendChild(box);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  host.appendChild(table);
+}
+
+/* ---------------------------------------------------------------------
+   TABLE VIEW (accessible fallback)
+--------------------------------------------------------------------- */
+function renderTable() {
+  const host = document.getElementById('tableHost');
+  host.innerHTML = '';
+  const table = document.createElement('table');
+  table.className = 'data-table';
+  table.innerHTML = `<thead><tr>
+    <th>Club</th><th>Rank</th><th>Rival</th><th>Intensity</th><th>Why</th>
+  </tr></thead>`;
+  const tbody = document.createElement('tbody');
+  const rows = (state.selected ? RIVALRIES.filter(r => r.s === state.selected) : RIVALRIES.slice())
+    .sort((a, b) => (a.s.localeCompare(b.s)) || (b.i - a.i));
+
+  let lastClub = null, rank = 0;
+  rows.forEach(r => {
+    if (r.s !== lastClub) { rank = 0; lastClub = r.s; }
+    rank += 1;
+    const tr = document.createElement('tr');
+    const tdClub = document.createElement('td');
+    const pill = document.createElement('span'); pill.className = 'pill';
+    const dot = document.createElement('span'); dot.className = 'legend-groupdot'; dot.style.background = CLUBS[r.s].color;
+    pill.appendChild(dot); pill.appendChild(document.createTextNode(CLUBS[r.s].name));
+    tdClub.appendChild(pill);
+
+    const tdRank = document.createElement('td'); tdRank.className = 'num'; tdRank.textContent = rank;
+    const tdRival = document.createElement('td'); tdRival.textContent = CLUBS[r.t].name;
+    const tdInt = document.createElement('td');
+    const stars = document.createElement('span'); stars.className = 'stars'; stars.textContent = '★'.repeat(r.i) + '☆'.repeat(5 - r.i);
+    tdInt.appendChild(stars);
+    tdInt.appendChild(document.createTextNode(' (' + r.i + '/5)'));
+    const tdNote = document.createElement('td'); tdNote.textContent = r.note;
+
+    tr.appendChild(tdClub); tr.appendChild(tdRank); tr.appendChild(tdRival); tr.appendChild(tdInt); tr.appendChild(tdNote);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  host.appendChild(table);
+}
+
+/* ---------------------------------------------------------------------
+   MAIN RENDER
+--------------------------------------------------------------------- */
+function render() {
+  buildChips();
+  renderSidePanel();
+
+  document.querySelectorAll('#viewSeg button').forEach(b => b.classList.toggle('active', b.dataset.view === state.view));
+  document.getElementById('viz-svg').style.display = state.view === 'network' ? 'block' : 'none';
+  document.getElementById('matrixHost').style.display = state.view === 'matrix' ? 'block' : 'none';
+  document.getElementById('tableHost').style.display = state.view === 'table' ? 'block' : 'none';
+  document.getElementById('vizHint').style.display = state.view === 'network' ? 'block' : 'none';
+
+  if (state.view === 'network') renderNetwork();
+  else if (state.view === 'matrix') renderMatrix();
+  else renderTable();
+}
+
+document.getElementById('viewSeg').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button[data-view]');
+  if (!btn) return;
+  state.view = btn.dataset.view;
+  render();
+});
+
+window.addEventListener('resize', () => { if (state.view === 'network') renderNetwork(); });
+
+render();
+</script>
+</body>
+</html>
