@@ -212,6 +212,16 @@
   }
   .rival-row.open + .rival-blurb { display: block; }
 
+  .club-section { padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--border); }
+  .club-section:first-child { padding-top: 0; margin-top: 0; border-top: none; }
+  .club-section-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .club-section-name { font-size: 14px; font-weight: 700; flex: 1; }
+  .club-section-remove {
+    border: none; background: transparent; color: var(--ink-muted); font-size: 17px; line-height: 1;
+    cursor: pointer; padding: 2px 4px; border-radius: 4px;
+  }
+  .club-section-remove:hover { background: var(--border-soft); color: var(--ink); }
+
   .empty-state {
     color: var(--ink-muted); font-size: 13px; padding: 30px 4px; text-align: center;
   }
@@ -321,11 +331,11 @@
       <svg id="viz-svg"></svg>
       <div id="matrixHost" class="matrix-wrap" style="display:none;"></div>
       <div id="tableHost" class="table-wrap" style="display:none;"></div>
-      <div class="viz-hint" id="vizHint">Drag nodes &middot; click a club to focus its rivalries &middot; hover a link for details</div>
+      <div class="viz-hint" id="vizHint">Drag nodes &middot; click clubs to select multiple &middot; hover a link for details</div>
     </div>
     <div class="panel side-panel">
-      <h2 id="sideTitle">Select a club</h2>
-      <p class="side-sub" id="sideSub">Click any node, chip, or matrix row to see its top 5 rivals.</p>
+      <h2 id="sideTitle">Select one or more clubs</h2>
+      <p class="side-sub" id="sideSub">Click any node, chip, or matrix row to see its top 5 rivals. Selections stack.</p>
       <div id="rivalList"></div>
     </div>
   </div>
@@ -690,7 +700,13 @@ function hideTooltip() { tooltip.style.opacity = 0; }
 /* ---------------------------------------------------------------------
    STATE
 --------------------------------------------------------------------- */
-let state = { view: 'network', selected: null, search: '' };
+let state = { view: 'network', selected: new Set(), search: '' };
+
+function toggleSelected(id) {
+  if (state.selected.has(id)) state.selected.delete(id);
+  else state.selected.add(id);
+  render();
+}
 
 /* ---------------------------------------------------------------------
    TEAM FILTER CHIPS
@@ -699,9 +715,9 @@ function buildChips() {
   const host = document.getElementById('teamFilter');
   host.innerHTML = '';
   const allChip = document.createElement('button');
-  allChip.className = 'chip all' + (state.selected === null ? ' active' : '');
+  allChip.className = 'chip all' + (state.selected.size === 0 ? ' active' : '');
   allChip.textContent = 'All clubs';
-  allChip.onclick = () => { state.selected = null; render(); };
+  allChip.onclick = () => { state.selected.clear(); render(); };
   host.appendChild(allChip);
 
   const q = state.search.trim().toLowerCase();
@@ -710,12 +726,12 @@ function buildChips() {
     .forEach(id => {
       const c = CLUBS[id];
       const chip = document.createElement('button');
-      chip.className = 'chip' + (state.selected === id ? ' active' : '');
+      chip.className = 'chip' + (state.selected.has(id) ? ' active' : '');
       chip.style.setProperty('--chip-color', c.color);
       const dot = document.createElement('span'); dot.className = 'dot';
       const label = document.createElement('span'); label.textContent = c.name;
       chip.appendChild(dot); chip.appendChild(label);
-      chip.onclick = () => { state.selected = (state.selected === id ? null : id); render(); };
+      chip.onclick = () => toggleSelected(id);
       host.appendChild(chip);
     });
 }
@@ -729,40 +745,57 @@ function renderSidePanel() {
   const listEl = document.getElementById('rivalList');
   listEl.innerHTML = '';
 
-  if (!state.selected) {
-    titleEl.textContent = 'Select a club';
-    subEl.textContent = 'Click any node, chip, or matrix row to see its top 5 rivals.';
+  if (state.selected.size === 0) {
+    titleEl.textContent = 'Select one or more clubs';
+    subEl.textContent = 'Click any node, chip, or matrix row to see its top 5 rivals. Selections stack — pick several to compare.';
     listEl.innerHTML = '<div class="empty-state">Total rivalry links plotted: ' + RIVALRIES.length + ' across ' + MAIN_IDS.length + ' clubs.</div>';
     return;
   }
-  const club = CLUBS[state.selected];
-  titleEl.innerHTML = '';
-  const b = document.createElement('span'); b.className = 'badge'; b.style.background = club.color; b.textContent = club.short;
-  const t = document.createElement('span'); t.textContent = club.name;
-  titleEl.appendChild(b); titleEl.appendChild(t);
-  subEl.textContent = club.name + " played " + club.seasons + " of the last 10 Premier League seasons. Top 5 rivals, ranked by intensity.";
 
-  const rivals = RIVALRIES.filter(r => r.s === state.selected).sort((a, b) => b.i - a.i);
-  rivals.forEach((r, idx) => {
-    const rc = CLUBS[r.t];
-    const row = document.createElement('div');
-    row.className = 'rival-row';
-    row.innerHTML = `
-      <span class="rank">${idx + 1}</span>
-      <span class="name">${rc.name}</span>
-      <span class="int-label">${'★'.repeat(r.i)}${'☆'.repeat(5 - r.i)}</span>
-      <span class="bar-track"><span class="bar-fill" style="width:${r.i * 20}%;background:${intHex(r.i)}"></span></span>
-    `;
-    const blurb = document.createElement('div');
-    blurb.className = 'rival-blurb';
-    blurb.textContent = r.note;
-    row.addEventListener('click', () => {
-      const opening = !row.classList.contains('open');
-      listEl.querySelectorAll('.rival-row').forEach(el => el.classList.remove('open'));
-      if (opening) row.classList.add('open');
+  const selectedIds = MAIN_IDS.filter(id => state.selected.has(id));
+  titleEl.textContent = selectedIds.length === 1 ? CLUBS[selectedIds[0]].name : selectedIds.length + ' clubs selected';
+  subEl.textContent = selectedIds.length === 1
+    ? (CLUBS[selectedIds[0]].name + " played " + CLUBS[selectedIds[0]].seasons + " of the last 10 Premier League seasons. Top 5 rivals, ranked by intensity.")
+    : 'Top 5 rivals for each selected club, ranked by intensity. Click a chip again to remove it.';
+
+  selectedIds.forEach(id => {
+    const club = CLUBS[id];
+    const section = document.createElement('div');
+    section.className = 'club-section';
+
+    const head = document.createElement('div');
+    head.className = 'club-section-head';
+    const b = document.createElement('span'); b.className = 'badge'; b.style.background = club.color; b.textContent = club.short;
+    const t = document.createElement('span'); t.className = 'club-section-name'; t.textContent = club.name;
+    const x = document.createElement('button'); x.className = 'club-section-remove'; x.type = 'button'; x.textContent = '×'; x.title = 'Remove ' + club.name;
+    x.onclick = () => toggleSelected(id);
+    head.appendChild(b); head.appendChild(t); head.appendChild(x);
+    section.appendChild(head);
+
+    const rivals = RIVALRIES.filter(r => r.s === id).sort((a, b) => b.i - a.i);
+    rivals.forEach((r, idx) => {
+      const rc = CLUBS[r.t];
+      const row = document.createElement('div');
+      row.className = 'rival-row';
+      row.innerHTML = `
+        <span class="rank">${idx + 1}</span>
+        <span class="name">${rc.name}</span>
+        <span class="int-label">${'★'.repeat(r.i)}${'☆'.repeat(5 - r.i)}</span>
+        <span class="bar-track"><span class="bar-fill" style="width:${r.i * 20}%;background:${intHex(r.i)}"></span></span>
+      `;
+      const blurb = document.createElement('div');
+      blurb.className = 'rival-blurb';
+      blurb.textContent = r.note;
+      row.addEventListener('click', () => {
+        const opening = !row.classList.contains('open');
+        section.querySelectorAll('.rival-row').forEach(el => el.classList.remove('open'));
+        if (opening) row.classList.add('open');
+      });
+      section.appendChild(row);
+      section.appendChild(blurb);
     });
-    listEl.appendChild(row);
-    listEl.appendChild(blurb);
+
+    listEl.appendChild(section);
   });
 }
 
@@ -778,10 +811,10 @@ function renderNetwork() {
   const height = 720;
   svg.attr('viewBox', [0, 0, width, height]);
 
-  const visibleEdges = state.selected ? RIVALRIES.filter(r => r.s === state.selected) : RIVALRIES;
+  const visibleEdges = state.selected.size ? RIVALRIES.filter(r => state.selected.has(r.s)) : RIVALRIES;
   const nodeIds = new Set();
   visibleEdges.forEach(r => { nodeIds.add(r.s); nodeIds.add(r.t); });
-  if (!state.selected) MAIN_IDS.forEach(id => nodeIds.add(id));
+  if (!state.selected.size) MAIN_IDS.forEach(id => nodeIds.add(id));
 
   const nodes = Array.from(nodeIds).map(id => ({ id, ...CLUBS[id] }));
   const linkCountBy = {};
@@ -796,27 +829,30 @@ function renderNetwork() {
 
   const defs = svg.append('defs');
   [1,2,3,4,5].forEach(i => {
-    const size = 7 + i * 1.4;
+    const size = 16 + i * 3.2;
     defs.append('marker')
       .attr('id', 'arrow-' + i)
-      .attr('viewBox', '0 -5 10 10')
-      .attr('refX', 9)
+      .attr('viewBox', '0 -6 12 12')
+      .attr('refX', 10.5)
       .attr('refY', 0)
       .attr('markerWidth', size)
       .attr('markerHeight', size)
       .attr('markerUnits', 'userSpaceOnUse')
       .attr('orient', 'auto')
       .append('path')
-      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('d', 'M0,-6L12,0L0,6Z')
       .attr('class', 'arrowhead')
-      .attr('fill', intHex(i));
+      .attr('fill', intHex(i))
+      .attr('stroke', 'var(--surface-raised)')
+      .attr('stroke-width', 0.75)
+      .attr('stroke-linejoin', 'round');
   });
 
   const g = svg.append('g');
 
   svg.call(d3.zoom().scaleExtent([0.5, 3]).on('zoom', (ev) => g.attr('transform', ev.transform)));
 
-  const focused = !!state.selected;
+  const focused = state.selected.size > 0;
 
   sim = d3.forceSimulation(nodes)
     .force('link', d3.forceLink(links).id(d => d.id).distance(d => focused ? (190 - d.intensity * 10) : (110 - d.intensity * 6)).strength(focused ? 0.45 : 0.25))
@@ -873,7 +909,7 @@ function renderNetwork() {
     });
 
   nodeG.on('click', (ev, d) => {
-    if (d.group === 'main') { state.selected = (state.selected === d.id ? null : d.id); render(); }
+    if (d.group === 'main') toggleSelected(d.id);
   });
   nodeG.on('mousemove', (ev, d) => {
     const out = RIVALRIES.filter(r => r.s === d.id).length;
@@ -897,7 +933,7 @@ function renderNetwork() {
     const sx = d.source.x, sy = d.source.y, tx = d.target.x, ty = d.target.y;
     const dx = tx - sx, dy = ty - sy;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const pullback = radiusFor(d.target) + 4;
+    const pullback = radiusFor(d.target) + 6;
     const ex = tx - (dx / dist) * pullback;
     const ey = ty - (dy / dist) * pullback;
     return `M${sx},${sy}L${ex},${ey}`;
@@ -934,10 +970,10 @@ function renderMatrix() {
   const tbody = document.createElement('tbody');
   rowIds.forEach(rid => {
     const tr = document.createElement('tr');
-    if (state.selected && state.selected !== rid) tr.style.opacity = 0.35;
+    if (state.selected.size && !state.selected.has(rid)) tr.style.opacity = 0.35;
     const th = document.createElement('th'); th.className = 'rowhead'; th.textContent = CLUBS[rid].name;
     th.style.cursor = 'pointer';
-    th.onclick = () => { state.selected = (state.selected === rid ? null : rid); render(); };
+    th.onclick = () => toggleSelected(rid);
     tr.appendChild(th);
     colIds.forEach(cid => {
       const td = document.createElement('td'); td.className = 'cell';
@@ -955,7 +991,7 @@ function renderMatrix() {
             body: rec.note
           });
           box.onmouseleave = hideTooltip;
-          box.onclick = () => { state.selected = rid; render(); };
+          box.onclick = () => toggleSelected(rid);
         } else {
           td.classList.add('empty');
         }
@@ -981,7 +1017,7 @@ function renderTable() {
     <th>Club</th><th>Rank</th><th>Rival</th><th>Intensity</th><th>Why</th>
   </tr></thead>`;
   const tbody = document.createElement('tbody');
-  const rows = (state.selected ? RIVALRIES.filter(r => r.s === state.selected) : RIVALRIES.slice())
+  const rows = (state.selected.size ? RIVALRIES.filter(r => state.selected.has(r.s)) : RIVALRIES.slice())
     .sort((a, b) => (a.s.localeCompare(b.s)) || (b.i - a.i));
 
   let lastClub = null, rank = 0;
