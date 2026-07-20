@@ -811,7 +811,13 @@ function renderNetwork() {
   const height = 720;
   svg.attr('viewBox', [0, 0, width, height]);
 
-  const visibleEdges = state.selected.size ? RIVALRIES.filter(r => state.selected.has(r.s)) : RIVALRIES;
+  const outgoing = state.selected.size ? RIVALRIES.filter(r => state.selected.has(r.s)) : RIVALRIES;
+  // when a rival also lists a selected club as one of ITS rivals, show that reverse arrow too
+  const reciprocals = state.selected.size
+    ? RIVALRIES.filter(r => state.selected.has(r.t) && !state.selected.has(r.s) &&
+        outgoing.some(o => o.s === r.t && o.t === r.s))
+    : [];
+  const visibleEdges = outgoing.concat(reciprocals);
   const nodeIds = new Set();
   visibleEdges.forEach(r => { nodeIds.add(r.s); nodeIds.add(r.t); });
   if (!state.selected.size) MAIN_IDS.forEach(id => nodeIds.add(id));
@@ -893,6 +899,15 @@ function renderNetwork() {
       .on('end', (ev, d) => { if (!ev.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
 
   nodeG.append('circle')
+    .attr('class', 'select-ring')
+    .attr('r', d => radiusFor(d) + 6)
+    .attr('fill', 'none')
+    .attr('stroke', 'var(--ink)')
+    .attr('stroke-width', 2.5)
+    .attr('opacity', d => (d.group === 'main' && state.selected.has(d.id)) ? 0.9 : 0)
+    .style('pointer-events', 'none');
+
+  nodeG.append('circle')
     .attr('r', d => radiusFor(d))
     .attr('fill', d => d.color)
     .attr('stroke', 'var(--surface-raised)')
@@ -936,7 +951,16 @@ function renderNetwork() {
     const pullback = radiusFor(d.target) + 6;
     const ex = tx - (dx / dist) * pullback;
     const ey = ty - (dy / dist) * pullback;
-    return `M${sx},${sy}L${ex},${ey}`;
+    if (!focused) return `M${sx},${sy}L${ex},${ey}`;
+    // curve every edge slightly, with opposite-direction edges bowing to opposite
+    // sides, so a mutual (two-way) rivalry renders as two separate visible arcs
+    // instead of one line hiding the other's arrowhead.
+    const px = -dy / dist, py = dx / dist;
+    const curveSign = d.source.id < d.target.id ? 1 : -1;
+    const curveAmt = 16 * curveSign;
+    const mx = (sx + ex) / 2 + px * curveAmt;
+    const my = (sy + ey) / 2 + py * curveAmt;
+    return `M${sx},${sy}Q${mx},${my} ${ex},${ey}`;
   }
 }
 
