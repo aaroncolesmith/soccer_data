@@ -811,13 +811,13 @@ function renderNetwork() {
   const height = 720;
   svg.attr('viewBox', [0, 0, width, height]);
 
-  const outgoing = state.selected.size ? RIVALRIES.filter(r => state.selected.has(r.s)) : RIVALRIES;
-  // when a rival also lists a selected club as one of ITS rivals, show that reverse arrow too
-  const reciprocals = state.selected.size
-    ? RIVALRIES.filter(r => state.selected.has(r.t) && !state.selected.has(r.s) &&
-        outgoing.some(o => o.s === r.t && o.t === r.s))
-    : [];
-  const visibleEdges = outgoing.concat(reciprocals);
+  // show every edge touching a selected club: its own top-5 rivals (outgoing),
+  // plus every other club that named it as one of THEIR top-5 (incoming) - even
+  // if the selected club doesn't rate that club back (e.g. Brentford names
+  // Chelsea as a rival even though Chelsea's own top 5 doesn't include Brentford).
+  const visibleEdges = state.selected.size
+    ? RIVALRIES.filter(r => state.selected.has(r.s) || state.selected.has(r.t))
+    : RIVALRIES;
   const nodeIds = new Set();
   visibleEdges.forEach(r => { nodeIds.add(r.s); nodeIds.add(r.t); });
   if (!state.selected.size) MAIN_IDS.forEach(id => nodeIds.add(id));
